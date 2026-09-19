@@ -27,6 +27,7 @@ import { PaymentOperationsModule } from './modules/admin/payment-operations/paym
 import { ReviewsModule } from './modules/admin/reviews/reviews.module';
 import { GiftCardsModule } from './modules/admin/gift-cards/gift-cards.module';
 import { MerchandisingModule } from './modules/admin/merchandising/merchandising.module';
+import { StorefrontMenusModule } from './modules/storefront/menus/storefront-menus.module';
 import { MenusModule } from './modules/admin/menus/menus.module';
 import { CmsModule } from './modules/admin/cms/cms.module';
 import { NotificationsModule } from './modules/admin/notifications/notifications.module';
@@ -107,6 +108,7 @@ import { StorefrontCmsModule } from './modules/storefront/cms/storefront-cms.mod
     AdminNewsletterModule,
     GiftCardsModule,
     MerchandisingModule,
+    StorefrontMenusModule,
     MenusModule,
     CmsModule,
     NotificationsModule,

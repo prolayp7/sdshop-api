@@ -258,6 +258,29 @@ async function main() {
     });
   }
 
+  // Footer menu - link columns, admin-editable (column titles are top-level
+  // items, their links are child items). Only created when missing so admin
+  // edits survive re-seeding.
+  const footerMenu = await prisma.menu.upsert({
+    where: { slug: 'footer' },
+    update: {},
+    create: { name: 'Footer', slug: 'footer', location: 'FOOTER' },
+  });
+  if ((await prisma.menuItem.count({ where: { menuId: footerMenu.id } })) === 0) {
+    const footerColumns: { title: string; links: { label: string; href: string }[] }[] = [
+    { title: 'Shop by Category', links: [{ label: 'SD Cards (UHS-I & UHS-II)', href: '/category?cat=SD%20Cards' }, { label: 'microSD Cards', href: '/category?cat=microSD%20Cards' }, { label: 'CFexpress Type A & B', href: '/category?cat=CFexpress%20Cards' }, { label: 'Cinema SSD & Enclosures', href: '/category?q=SSD' }, { label: 'Card Readers & Hubs', href: '/category?cat=Card%20Readers' }, { label: 'Adapters & Accessories', href: '/category?cat=Card%20Adapters' }, { label: 'All Products', href: '/category' }] },
+    { title: 'Trade & Pro', links: [{ label: 'Pro Account', href: '/account' }, { label: 'Creator Deals', href: '/category?deals=1' }, { label: 'Bulk & Studio Orders', href: '/pages/bulk-orders' }, { label: 'Corporate Inquiries', href: '/pages/corporate-inquiries' }, { label: 'GST Invoice Support', href: '/pages/gst-invoicing' }, { label: 'Express Dispatch', href: '/pages/shipping' }] },
+    { title: 'Customer Support', links: [{ label: 'Track Your Order', href: '/account?tab=orders' }, { label: 'Returns & Refunds', href: '/pages/returns' }, { label: 'Warranty & Service', href: '/pages/warranty' }, { label: 'Delivery Information', href: '/pages/shipping' }, { label: 'Frequently Asked Questions', href: '/faqs' }, { label: 'Contact Support', href: '/pages/contact' }] },
+    { title: 'Guides & Tools', links: [{ label: 'Buying Guides', href: '/blog' }, { label: 'Compare Products', href: '/compare' }, { label: 'Find V90 SD Cards', href: '/category?q=V90' }, { label: 'CFexpress Finder', href: '/category?q=CFexpress' }, { label: 'Choose a Card Reader', href: '/category?q=reader' }, { label: 'Storage FAQs', href: '/faqs' }] },
+    ];
+    for (const [columnIndex, column] of footerColumns.entries()) {
+      const parent = await prisma.menuItem.create({ data: { menuId: footerMenu.id, label: column.title, sortOrder: columnIndex + 1 } });
+      for (const [linkIndex, link] of column.links.entries()) {
+        await prisma.menuItem.create({ data: { menuId: footerMenu.id, parentId: parent.id, label: link.label, href: link.href, sortOrder: linkIndex + 1 } });
+      }
+    }
+  }
+
   // Homepage merchandising - demo content so the storefront home page has
   // something real to render (Day 6 will replace this with production content
   // entered through the admin panel).
