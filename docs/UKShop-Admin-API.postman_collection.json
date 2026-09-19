@@ -1,0 +1,3607 @@
+{
+  "info": {
+    "_postman_id": "b5a88e89-b0ed-45ba-aed8-958f49b3f7f2",
+    "name": "UKShop Admin API",
+    "description": "Complete Postman collection for every implemented UKShop Admin API route. Login stores accessToken and refreshToken automatically. Select files manually for media and product import requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1"
+    },
+    {
+      "key": "adminEmail",
+      "value": "superadmin@ukshop.test"
+    },
+    {
+      "key": "adminPassword",
+      "value": "ChangeMe123!"
+    },
+    {
+      "key": "settingKey",
+      "value": "store.general"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "adminUserId",
+      "value": "1"
+    },
+    {
+      "key": "roleId",
+      "value": "1"
+    },
+    {
+      "key": "customerId",
+      "value": "1"
+    },
+    {
+      "key": "categoryId",
+      "value": "1"
+    },
+    {
+      "key": "brandId",
+      "value": "1"
+    },
+    {
+      "key": "attributeId",
+      "value": "1"
+    },
+    {
+      "key": "productId",
+      "value": "1"
+    },
+    {
+      "key": "variantId",
+      "value": "1"
+    },
+    {
+      "key": "faqId",
+      "value": "1"
+    },
+    {
+      "key": "collectionId",
+      "value": "1"
+    },
+    {
+      "key": "mediaId",
+      "value": "1"
+    },
+    {
+      "key": "shippingMethodId",
+      "value": "1"
+    },
+    {
+      "key": "bandId",
+      "value": "1"
+    },
+    {
+      "key": "orderId",
+      "value": "1"
+    },
+    {
+      "key": "orderItemId",
+      "value": "1"
+    },
+    {
+      "key": "returnId",
+      "value": "1"
+    },
+    {
+      "key": "disputeId",
+      "value": "1"
+    },
+    {
+      "key": "reviewId",
+      "value": "1"
+    },
+    {
+      "key": "couponsId",
+      "value": "1"
+    },
+    {
+      "key": "bannersId",
+      "value": "1"
+    },
+    {
+      "key": "featuredsectionsId",
+      "value": "1"
+    },
+    {
+      "key": "heroslidesId",
+      "value": "1"
+    },
+    {
+      "key": "menuId",
+      "value": "1"
+    },
+    {
+      "key": "menuItemId",
+      "value": "1"
+    },
+    {
+      "key": "blogPostId",
+      "value": "1"
+    },
+    {
+      "key": "pageId",
+      "value": "1"
+    },
+    {
+      "key": "faqCategoryId",
+      "value": "1"
+    },
+    {
+      "key": "enquiryId",
+      "value": "1"
+    },
+    {
+      "key": "giftCardId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "POST /api/v1/admin/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{adminEmail}}\",\"password\":\"{{adminPassword}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "const data=pm.response.json().data; pm.collectionVariables.set('accessToken',data.accessToken); pm.collectionVariables.set('refreshToken',data.refreshToken);"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "POST /api/v1/admin/auth/refresh",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "POST /api/v1/admin/auth/logout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\":\"{{refreshToken}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "me"
+              ]
+            },
+            "description": "GET /api/v1/admin/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RBAC",
+      "item": [
+        {
+          "name": "List Admin Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/admin-users?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "admin-users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/admin-users"
+          }
+        },
+        {
+          "name": "Create Admin User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/admin-users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "admin-users"
+              ]
+            },
+            "description": "POST /api/v1/admin/admin-users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"staff@example.com\",\"name\":\"Catalog Manager\",\"roleId\":1,\"temporaryPassword\":\"Temporary123!\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Admin User",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/admin-users/{{adminUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "admin-users",
+                "{{adminUserId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/admin-users/{{adminUserId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Senior Catalog Manager\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Admin User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/admin-users/{{adminUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "admin-users",
+                "{{adminUserId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/admin-users/{{adminUserId}}"
+          }
+        },
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "roles"
+              ]
+            },
+            "description": "GET /api/v1/admin/roles"
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "roles"
+              ]
+            },
+            "description": "POST /api/v1/admin/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Catalog Manager\",\"description\":\"Catalog access\",\"permissionKeys\":[\"products.manage\"]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "roles",
+                "{{roleId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/roles/{{roleId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Catalog Manager\",\"description\":\"Catalog access\",\"permissionKeys\":[\"products.manage\"]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "roles",
+                "{{roleId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/roles/{{roleId}}"
+          }
+        },
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "permissions"
+              ]
+            },
+            "description": "GET /api/v1/admin/permissions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/customers?page=1&perPage=20&status=ACTIVE",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/customers"
+          }
+        },
+        {
+          "name": "Customer Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/customers/{{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "customers",
+                "{{customerId}}"
+              ]
+            },
+            "description": "GET /api/v1/admin/customers/{{customerId}}"
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/customers/{{customerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "customers",
+                "{{customerId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/customers/{{customerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"phone\":\"+441234567890\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Customer Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/customers/{{customerId}}/orders?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "customers",
+                "{{customerId}}",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/customers/{{customerId}}/orders"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            },
+            "description": "GET /api/v1/admin/categories"
+          }
+        },
+        {
+          "name": "Create Categories",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            },
+            "description": "POST /api/v1/admin/categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Laptops\",\"slug\":\"laptops\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/{{categorieId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                "{{categorieId}}"
+              ]
+            },
+            "description": "GET /api/v1/admin/categories/{{categorieId}}"
+          }
+        },
+        {
+          "name": "Update Categories",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/{{categorieId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                "{{categorieId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/categories/{{categorieId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Laptops\",\"slug\":\"laptops\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Categories",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/{{categorieId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                "{{categorieId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/categories/{{categorieId}}"
+          }
+        },
+        {
+          "name": "List Brands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/brands",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "brands"
+              ]
+            },
+            "description": "GET /api/v1/admin/brands"
+          }
+        },
+        {
+          "name": "Create Brands",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/brands",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "brands"
+              ]
+            },
+            "description": "POST /api/v1/admin/brands",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Framework\",\"slug\":\"framework\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Brands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/brands/{{brandId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "brands",
+                "{{brandId}}"
+              ]
+            },
+            "description": "GET /api/v1/admin/brands/{{brandId}}"
+          }
+        },
+        {
+          "name": "Update Brands",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/brands/{{brandId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "brands",
+                "{{brandId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/brands/{{brandId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Framework\",\"slug\":\"framework\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Brands",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/brands/{{brandId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "brands",
+                "{{brandId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/brands/{{brandId}}"
+          }
+        },
+        {
+          "name": "List Conditions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-conditions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "product-conditions"
+              ]
+            },
+            "description": "GET /api/v1/admin/product-conditions"
+          }
+        },
+        {
+          "name": "Create Condition",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-conditions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "product-conditions"
+              ]
+            },
+            "description": "POST /api/v1/admin/product-conditions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Open Box\",\"slug\":\"open-box\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Tax Rates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/tax-rates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tax-rates"
+              ]
+            },
+            "description": "GET /api/v1/admin/tax-rates"
+          }
+        },
+        {
+          "name": "Create Tax Rate",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/tax-rates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tax-rates"
+              ]
+            },
+            "description": "POST /api/v1/admin/tax-rates",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Standard VAT\",\"ratePercent\":20,\"isDefault\":true,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Attributes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-attributes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "product-attributes"
+              ]
+            },
+            "description": "GET /api/v1/admin/product-attributes"
+          }
+        },
+        {
+          "name": "Create Attribute",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-attributes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "product-attributes"
+              ]
+            },
+            "description": "POST /api/v1/admin/product-attributes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Colour\",\"slug\":\"colour\",\"inputType\":\"COLOR_SWATCH\",\"isFilterable\":true}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create Attribute Value",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/product-attributes/{{attributeId}}/values",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "product-attributes",
+                "{{attributeId}}",
+                "values"
+              ]
+            },
+            "description": "POST /api/v1/admin/product-attributes/{{attributeId}}/values",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"value\":\"Black\",\"swatchValue\":\"#000000\",\"sortOrder\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Collections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/collections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "collections"
+              ]
+            },
+            "description": "GET /api/v1/admin/collections"
+          }
+        },
+        {
+          "name": "Create Collection",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/collections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "collections"
+              ]
+            },
+            "description": "POST /api/v1/admin/collections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Featured PCs\",\"slug\":\"featured-pcs\",\"type\":\"MANUAL\",\"productIds\":[1]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Collection",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/collections/{{collectionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "collections",
+                "{{collectionId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/collections/{{collectionId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Featured PCs\",\"slug\":\"featured-pcs\",\"type\":\"MANUAL\",\"productIds\":[1]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Collection",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/collections/{{collectionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "collections",
+                "{{collectionId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/collections/{{collectionId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products?page=1&perPage=20&status=ACTIVE",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                },
+                {
+                  "key": "q",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/products"
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products"
+              ]
+            },
+            "description": "POST /api/v1/admin/products",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"categoryId\":1,\"title\":\"Gaming PC\",\"slug\":\"gaming-pc\",\"status\":\"DRAFT\",\"secondaryCategoryIds\":[]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Import Products JSON",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/import",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "import"
+              ]
+            },
+            "description": "POST /api/v1/admin/products/import",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Product Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "GET /api/v1/admin/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/products/{{productId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"categoryId\":1,\"title\":\"Gaming PC\",\"slug\":\"gaming-pc\",\"status\":\"DRAFT\",\"secondaryCategoryIds\":[]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Add FAQ",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}/faqs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}",
+                "faqs"
+              ]
+            },
+            "description": "POST /api/v1/admin/products/{{productId}}/faqs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"question\":\"Is it upgradeable?\",\"answer\":\"Yes.\",\"sortOrder\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete FAQ",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}/faqs/{{faqId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}",
+                "faqs",
+                "{{faqId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/products/{{productId}}/faqs/{{faqId}}"
+          }
+        },
+        {
+          "name": "List Variants",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}/variants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}",
+                "variants"
+              ]
+            },
+            "description": "GET /api/v1/admin/products/{{productId}}/variants"
+          }
+        },
+        {
+          "name": "Create Variant",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}/variants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}",
+                "variants"
+              ]
+            },
+            "description": "POST /api/v1/admin/products/{{productId}}/variants",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"16GB / 1TB\",\"slug\":\"16gb-1tb\",\"price\":1299.99,\"stockQty\":10,\"isDefault\":true,\"attributeValueIds\":[1]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Variant",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}/variants/{{variantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}",
+                "variants",
+                "{{variantId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/products/{{productId}}/variants/{{variantId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"16GB / 1TB\",\"slug\":\"16gb-1tb\",\"price\":1299.99,\"stockQty\":10,\"isDefault\":true,\"attributeValueIds\":[1]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Variant",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}/variants/{{variantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}",
+                "variants",
+                "{{variantId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/products/{{productId}}/variants/{{variantId}}"
+          }
+        },
+        {
+          "name": "Adjust Stock",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/products/{{productId}}/variants/{{variantId}}/stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "products",
+                "{{productId}}",
+                "variants",
+                "{{variantId}}",
+                "stock"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/products/{{productId}}/variants/{{variantId}}/stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"delta\":5}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media",
+      "item": [
+        {
+          "name": "List Media",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/media?page=1&perPage=24&search=&type=IMAGE&collection=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "media"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "24",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "IMAGE",
+                  "disabled": true
+                },
+                {
+                  "key": "collection",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/media"
+          }
+        },
+        {
+          "name": "Upload Media",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/media",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "media"
+              ]
+            },
+            "description": "POST /api/v1/admin/media",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "ownerType",
+                  "value": "LIBRARY",
+                  "type": "text"
+                },
+                {
+                  "key": "ownerId",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "collection",
+                  "value": "general",
+                  "type": "text"
+                },
+                {
+                  "key": "altText",
+                  "value": "Product image",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Media",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/media/{{mediaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "media",
+                "{{mediaId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/media/{{mediaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"altText\":\"Product image\",\"sortOrder\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Media",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/media/{{mediaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "media",
+                "{{mediaId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/media/{{mediaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipping",
+      "item": [
+        {
+          "name": "List Methods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/shipping-methods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "shipping-methods"
+              ]
+            },
+            "description": "GET /api/v1/admin/shipping-methods"
+          }
+        },
+        {
+          "name": "Create Method",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/shipping-methods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "shipping-methods"
+              ]
+            },
+            "description": "POST /api/v1/admin/shipping-methods",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Royal Mail\",\"carrier\":\"Royal Mail\",\"rateType\":\"FLAT\",\"flatRate\":4.99,\"estimatedDaysMin\":2,\"estimatedDaysMax\":3,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Method",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/shipping-methods/{{shippingMethodId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "shipping-methods",
+                "{{shippingMethodId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/shipping-methods/{{shippingMethodId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Royal Mail\",\"carrier\":\"Royal Mail\",\"rateType\":\"FLAT\",\"flatRate\":4.99,\"estimatedDaysMin\":2,\"estimatedDaysMax\":3,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Method",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/shipping-methods/{{shippingMethodId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "shipping-methods",
+                "{{shippingMethodId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/shipping-methods/{{shippingMethodId}}"
+          }
+        },
+        {
+          "name": "Add Rate Band",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/shipping-methods/{{shippingMethodId}}/rate-bands",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "shipping-methods",
+                "{{shippingMethodId}}",
+                "rate-bands"
+              ]
+            },
+            "description": "POST /api/v1/admin/shipping-methods/{{shippingMethodId}}/rate-bands",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"minWeightKg\":0,\"maxWeightKg\":5,\"rate\":7.5}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Rate Band",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/shipping-methods/{{shippingMethodId}}/rate-bands/{{bandId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "shipping-methods",
+                "{{shippingMethodId}}",
+                "rate-bands",
+                "{{bandId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/shipping-methods/{{shippingMethodId}}/rate-bands/{{bandId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/orders"
+          }
+        },
+        {
+          "name": "Order Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "description": "GET /api/v1/admin/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Update Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                "{{orderId}}",
+                "status"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/orders/{{orderId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"toStatus\":\"PROCESSING\",\"note\":\"Payment confirmed\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Tracking",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderId}}/tracking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                "{{orderId}}",
+                "tracking"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/orders/{{orderId}}/tracking",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"trackingCarrier\":\"DHL\",\"trackingNumber\":\"TRACK123\",\"trackingUrl\":\"https://example.com/track/TRACK123\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Item Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderId}}/items/{{orderItemId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                "{{orderId}}",
+                "items",
+                "{{orderItemId}}",
+                "status"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/orders/{{orderId}}/items/{{orderItemId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\":\"PACKED\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Note",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/orders/{{orderId}}/note",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                "{{orderId}}",
+                "note"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/orders/{{orderId}}/note",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"adminNote\":\"Priority customer\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "List Returns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/returns?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "returns"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/returns"
+          }
+        },
+        {
+          "name": "Approve Return",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/returns/{{returnId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "returns",
+                "{{returnId}}",
+                "approve"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/returns/{{returnId}}/approve",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"pickupStatus\":\"PENDING\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reject Return",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/returns/{{returnId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "returns",
+                "{{returnId}}",
+                "reject"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/returns/{{returnId}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"comment\":\"Outside return policy\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Receive Return",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/returns/{{returnId}}/receive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "returns",
+                "{{returnId}}",
+                "receive"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/returns/{{returnId}}/receive"
+          }
+        },
+        {
+          "name": "Create Refund",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/returns/{{returnId}}/refund",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "returns",
+                "{{returnId}}",
+                "refund"
+              ]
+            },
+            "description": "POST /api/v1/admin/returns/{{returnId}}/refund",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refundAmount\":50}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/transactions?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "payments",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/payments/transactions"
+          }
+        },
+        {
+          "name": "List Disputes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/disputes?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "payments",
+                "disputes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/payments/disputes"
+          }
+        },
+        {
+          "name": "Update Dispute",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/disputes/{{disputeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "payments",
+                "disputes",
+                "{{disputeId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/payments/disputes/{{disputeId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\":\"UNDER_REVIEW\",\"reasonDescription\":\"Evidence submitted\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "List Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/reviews"
+          }
+        },
+        {
+          "name": "Approve Review",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews/{{reviewId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reviews",
+                "{{reviewId}}",
+                "approve"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/reviews/{{reviewId}}/approve"
+          }
+        },
+        {
+          "name": "Reject Review",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews/{{reviewId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reviews",
+                "{{reviewId}}",
+                "reject"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/reviews/{{reviewId}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"Violates review policy\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/reviews/{{reviewId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marketing",
+      "item": [
+        {
+          "name": "List Coupons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons"
+              ]
+            },
+            "description": "GET /api/v1/admin/coupons"
+          }
+        },
+        {
+          "name": "Create Coupons",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons"
+              ]
+            },
+            "description": "POST /api/v1/admin/coupons",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"code\":\"WELCOME10\",\"discountType\":\"PERCENT\",\"discountAmount\":10,\"maxUsagePerUser\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Coupons",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons/{{couponsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons",
+                "{{couponsId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/coupons/{{couponsId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"code\":\"WELCOME10\",\"discountType\":\"PERCENT\",\"discountAmount\":10,\"maxUsagePerUser\":1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Coupons",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/coupons/{{couponsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "coupons",
+                "{{couponsId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/coupons/{{couponsId}}"
+          }
+        },
+        {
+          "name": "List Banners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/banners",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "banners"
+              ]
+            },
+            "description": "GET /api/v1/admin/banners"
+          }
+        },
+        {
+          "name": "Create Banners",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/banners",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "banners"
+              ]
+            },
+            "description": "POST /api/v1/admin/banners",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Summer Sale\",\"slug\":\"summer-sale\",\"linkType\":\"CUSTOM_URL\",\"customUrl\":\"/sale\",\"position\":\"homepage\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Banners",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/banners/{{bannersId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "banners",
+                "{{bannersId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/banners/{{bannersId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Summer Sale\",\"slug\":\"summer-sale\",\"linkType\":\"CUSTOM_URL\",\"customUrl\":\"/sale\",\"position\":\"homepage\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Banners",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/banners/{{bannersId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "banners",
+                "{{bannersId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/banners/{{bannersId}}"
+          }
+        },
+        {
+          "name": "List Featured Sections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/featured-sections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "featured-sections"
+              ]
+            },
+            "description": "GET /api/v1/admin/featured-sections"
+          }
+        },
+        {
+          "name": "Create Featured Sections",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/featured-sections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "featured-sections"
+              ]
+            },
+            "description": "POST /api/v1/admin/featured-sections",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Featured Products\",\"slug\":\"featured-products\",\"sectionType\":\"MANUAL\",\"manualProductIds\":[1]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Featured Sections",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/featured-sections/{{featuredsectionsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "featured-sections",
+                "{{featuredsectionsId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/featured-sections/{{featuredsectionsId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Featured Products\",\"slug\":\"featured-products\",\"sectionType\":\"MANUAL\",\"manualProductIds\":[1]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Featured Sections",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/featured-sections/{{featuredsectionsId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "featured-sections",
+                "{{featuredsectionsId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/featured-sections/{{featuredsectionsId}}"
+          }
+        },
+        {
+          "name": "List Hero Slides",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/hero-slides",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "hero-slides"
+              ]
+            },
+            "description": "GET /api/v1/admin/hero-slides"
+          }
+        },
+        {
+          "name": "Create Hero Slides",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/hero-slides",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "hero-slides"
+              ]
+            },
+            "description": "POST /api/v1/admin/hero-slides",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"headline\":\"Build Your Dream PC\",\"ctaLabel\":\"Shop now\",\"ctaUrl\":\"/products\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Hero Slides",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/hero-slides/{{heroslidesId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "hero-slides",
+                "{{heroslidesId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/hero-slides/{{heroslidesId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"headline\":\"Build Your Dream PC\",\"ctaLabel\":\"Shop now\",\"ctaUrl\":\"/products\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Hero Slides",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/hero-slides/{{heroslidesId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "hero-slides",
+                "{{heroslidesId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/hero-slides/{{heroslidesId}}"
+          }
+        },
+        {
+          "name": "List Trust Badges",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/hero-trust-badges",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "hero-trust-badges"
+              ]
+            },
+            "description": "GET /api/v1/admin/hero-trust-badges"
+          }
+        },
+        {
+          "name": "Create Trust Badge",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/hero-trust-badges",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "hero-trust-badges"
+              ]
+            },
+            "description": "POST /api/v1/admin/hero-trust-badges",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"label\":\"Free UK Delivery\",\"icon\":\"truck\",\"sortOrder\":1,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menus",
+      "item": [
+        {
+          "name": "List Menus",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/menus",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "menus"
+              ]
+            },
+            "description": "GET /api/v1/admin/menus"
+          }
+        },
+        {
+          "name": "Create Menu",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/menus",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "menus"
+              ]
+            },
+            "description": "POST /api/v1/admin/menus",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Header\",\"slug\":\"header\",\"location\":\"HEADER\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Add Menu Item",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/menus/{{menuId}}/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "menus",
+                "{{menuId}}",
+                "items"
+              ]
+            },
+            "description": "POST /api/v1/admin/menus/{{menuId}}/items",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"label\":\"Computers\",\"href\":\"/computers\",\"sortOrder\":1,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Menu Item",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/menus/{{menuId}}/items/{{menuItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "menus",
+                "{{menuId}}",
+                "items",
+                "{{menuItemId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/menus/{{menuId}}/items/{{menuItemId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"label\":\"Computers\",\"href\":\"/computers\",\"sortOrder\":1,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Menu Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/menus/{{menuId}}/items/{{menuItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "menus",
+                "{{menuId}}",
+                "items",
+                "{{menuItemId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/menus/{{menuId}}/items/{{menuItemId}}"
+          }
+        },
+        {
+          "name": "Upsert Mega Menu",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/menus/items/{{menuItemId}}/mega-menu-panel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "menus",
+                "items",
+                "{{menuItemId}}",
+                "mega-menu-panel"
+              ]
+            },
+            "description": "POST /api/v1/admin/menus/items/{{menuItemId}}/mega-menu-panel",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"columns\":[{\"title\":\"Computers\",\"links\":[{\"label\":\"Gaming PCs\",\"href\":\"/gaming-pcs\"}]}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CMS",
+      "item": [
+        {
+          "name": "List Blog Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "categories"
+              ]
+            },
+            "description": "GET /api/v1/admin/blog/categories"
+          }
+        },
+        {
+          "name": "Create Blog Categories",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "categories"
+              ]
+            },
+            "description": "POST /api/v1/admin/blog/categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Guides\",\"slug\":\"guides\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Blog Authors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/authors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "authors"
+              ]
+            },
+            "description": "GET /api/v1/admin/blog/authors"
+          }
+        },
+        {
+          "name": "Create Blog Authors",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/authors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "authors"
+              ]
+            },
+            "description": "POST /api/v1/admin/blog/authors",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"UKShop Team\",\"role\":\"Editor\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Blog Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/posts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "posts"
+              ]
+            },
+            "description": "GET /api/v1/admin/blog/posts"
+          }
+        },
+        {
+          "name": "Create Blog Posts",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/posts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "posts"
+              ]
+            },
+            "description": "POST /api/v1/admin/blog/posts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"PC Building Guide\",\"slug\":\"pc-building-guide\",\"content\":\"Article content\",\"tags\":[\"guides\"],\"status\":\"DRAFT\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/pages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "pages"
+              ]
+            },
+            "description": "GET /api/v1/admin/pages"
+          }
+        },
+        {
+          "name": "Create Pages",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/pages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "pages"
+              ]
+            },
+            "description": "POST /api/v1/admin/pages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slug\":\"about-us\",\"title\":\"About Us\",\"contentBlocks\":[{\"type\":\"text\",\"value\":\"About UKShop\"}],\"status\":\"DRAFT\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List FAQ Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/faq-categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "faq-categories"
+              ]
+            },
+            "description": "GET /api/v1/admin/faq-categories"
+          }
+        },
+        {
+          "name": "Create FAQ Categories",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/faq-categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "faq-categories"
+              ]
+            },
+            "description": "POST /api/v1/admin/faq-categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Delivery\",\"sortOrder\":1,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Testimonials",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/testimonials",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials"
+              ]
+            },
+            "description": "GET /api/v1/admin/testimonials"
+          }
+        },
+        {
+          "name": "Create Testimonials",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/testimonials",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "testimonials"
+              ]
+            },
+            "description": "POST /api/v1/admin/testimonials",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Alex\",\"quote\":\"Excellent service.\",\"stars\":5,\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Blog Post",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/posts/{{blogPostId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "posts",
+                "{{blogPostId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/blog/posts/{{blogPostId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"PC Building Guide\",\"slug\":\"pc-building-guide\",\"content\":\"Article content\",\"tags\":[\"guides\"],\"status\":\"DRAFT\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Blog Post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/blog/posts/{{blogPostId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "blog",
+                "posts",
+                "{{blogPostId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/blog/posts/{{blogPostId}}"
+          }
+        },
+        {
+          "name": "Update Page",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/pages/{{pageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "pages",
+                "{{pageId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/pages/{{pageId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"slug\":\"about-us\",\"title\":\"About Us\",\"contentBlocks\":[{\"type\":\"text\",\"value\":\"About UKShop\"}],\"status\":\"DRAFT\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Page",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/pages/{{pageId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "pages",
+                "{{pageId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/admin/pages/{{pageId}}"
+          }
+        },
+        {
+          "name": "Add FAQ",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/faq-categories/{{faqCategoryId}}/faqs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "faq-categories",
+                "{{faqCategoryId}}",
+                "faqs"
+              ]
+            },
+            "description": "POST /api/v1/admin/faq-categories/{{faqCategoryId}}/faqs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"question\":\"How long is delivery?\",\"answer\":\"Usually 2–3 working days.\",\"status\":\"ACTIVE\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Enquiries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/enquiries?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "enquiries"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/enquiries"
+          }
+        },
+        {
+          "name": "Update Enquiry",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/enquiries/{{enquiryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "enquiries",
+                "{{enquiryId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/enquiries/{{enquiryId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\":\"IN_PROGRESS\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gift Cards",
+      "item": [
+        {
+          "name": "List Gift Cards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/gift-cards?page=1&perPage=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "gift-cards"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": false
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/gift-cards"
+          }
+        },
+        {
+          "name": "Issue Gift Card",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/gift-cards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "gift-cards"
+              ]
+            },
+            "description": "POST /api/v1/admin/gift-cards",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"initialBalance\":100,\"currency\":\"GBP\",\"issuedToEmail\":\"customer@example.com\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Gift Card",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/gift-cards/{{giftCardId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "gift-cards",
+                "{{giftCardId}}"
+              ]
+            },
+            "description": "PATCH /api/v1/admin/gift-cards/{{giftCardId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"adjustment\":-10}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "notifications"
+              ]
+            },
+            "description": "POST /api/v1/admin/notifications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"ANNOUNCEMENT\",\"title\":\"Maintenance\",\"message\":\"Scheduled maintenance tonight.\",\"metadata\":{\"channel\":\"admin\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "settings"
+              ]
+            },
+            "description": "GET /api/v1/admin/settings"
+          }
+        },
+        {
+          "name": "Upsert Setting",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/settings/{{settingKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "settings",
+                "{{settingKey}}"
+              ]
+            },
+            "description": "PUT /api/v1/admin/settings/{{settingKey}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"value\":{\"enabled\":true}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Sales Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports/sales?dateFrom=2026-01-01T00:00:00.000Z&dateTo=2026-12-31T23:59:59.999Z&groupBy=month",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "sales"
+              ],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": "2026-01-01T00:00:00.000Z",
+                  "disabled": false
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2026-12-31T23:59:59.999Z",
+                  "disabled": false
+                },
+                {
+                  "key": "groupBy",
+                  "value": "month",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/reports/sales"
+          }
+        },
+        {
+          "name": "Products Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports/products?",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "products"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/admin/reports/products"
+          }
+        },
+        {
+          "name": "Customers Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports/customers?dateFrom=2026-01-01T00:00:00.000Z&dateTo=2026-12-31T23:59:59.999Z",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": "2026-01-01T00:00:00.000Z",
+                  "disabled": false
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2026-12-31T23:59:59.999Z",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/reports/customers"
+          }
+        },
+        {
+          "name": "Inventory Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports/inventory?",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "inventory"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/admin/reports/inventory"
+          }
+        },
+        {
+          "name": "Orders Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports/orders?dateFrom=2026-01-01T00:00:00.000Z&dateTo=2026-12-31T23:59:59.999Z",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": "2026-01-01T00:00:00.000Z",
+                  "disabled": false
+                },
+                {
+                  "key": "dateTo",
+                  "value": "2026-12-31T23:59:59.999Z",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "GET /api/v1/admin/reports/orders"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UK Shop — 6-Day Tracker</title>
+<style>
+  :root {
+    --bg: #f4f6f9; --surface: #ffffff; --ink: #101827; --ink-2: #4b5565; --ink-3: #6b7585;
+    --border: #e2e6ec; --accent: #0b64d6; --accent-tint: #e8f1fd;
+    --good: #00875a; --good-tint: #eaf7f2; --danger: #d3223a; --danger-tint: #fdeaed;
+    --warn: #b45309; --warn-tint: #fef3e0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: #0a2540; color: #fff; padding: 24px 28px; }
+  header h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
+  header p { margin: 0; color: #9fb6d3; font-size: 13px; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .card .num { font-size: 22px; font-weight: 700; }
+  .card .lbl { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+
+  .progress-bar { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 6px; }
+  .progress-bar > div { height: 100%; background: var(--accent); transition: width .2s; }
+
+  .day { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+  .day-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; }
+  .day-head:hover { background: #fafbfc; }
+  .day-title { display: flex; align-items: baseline; gap: 10px; }
+  .day-title .d { font-weight: 700; font-size: 15px; }
+  .day-title .date { color: var(--ink-3); font-size: 12px; }
+  .day-title .focus { color: var(--ink-2); font-size: 13px; }
+  .day-progress { display: flex; align-items: center; gap: 8px; min-width: 140px; }
+  .day-progress .pct { font-size: 12px; color: var(--ink-3); width: 34px; text-align: right; }
+  .day-body { padding: 4px 18px 16px; display: none; }
+  .day.open .day-body { display: block; }
+  .day-head .chev { transition: transform .15s; color: var(--ink-3); }
+  .day.open .chev { transform: rotate(90deg); }
+
+  .repo-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; margin-right: 8px; }
+  .repo-api { background: var(--accent-tint); color: #0950ad; }
+  .repo-admin { background: #f1e9fb; color: #6a35b0; }
+  .repo-frontend { background: var(--good-tint); color: #12703a; }
+  .repo-all { background: var(--warn-tint); color: var(--warn); }
+
+  .task { display: flex; align-items: flex-start; gap: 10px; padding: 8px 4px; border-bottom: 1px dashed var(--border); }
+  .task:last-child { border-bottom: none; }
+  .task input { margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--accent); cursor: pointer; }
+  .task label { flex: 1; cursor: pointer; }
+  .task.done label { color: var(--ink-3); text-decoration: line-through; }
+  .verify { font-size: 12px; color: var(--ink-3); margin-top: 8px; padding: 8px 10px; background: var(--bg); border-radius: 8px; }
+  .verify b { color: var(--ink-2); }
+
+  .cutlist { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-top: 20px; }
+  .cutlist h3 { margin: 0 0 8px; font-size: 14px; }
+  .cutlist ul { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+
+  .risk { background: var(--danger-tint); border: 1px solid #f3c6cd; color: #9f1c1c; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; }
+  .risk b { display: block; margin-bottom: 3px; }
+
+  .reset { font-size: 12px; color: var(--ink-3); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; float: right; }
+  .reset:hover { background: var(--bg); }
+  footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>UK Shop Ecommerce — 6-Day Completion Tracker</h1>
+  <p>Started 26 Aug 2026 · Plan window 1 Sep – 6 Sep 2026 · API / Admin Panel / Frontend</p>
+</header>
+
+<div class="wrap">
+
+  <div class="summary" id="summary"></div>
+
+  <button class="reset" onclick="if(confirm('Reset all checked progress?')){localStorage.removeItem('ukshop-tracker-v1');location.reload();}">Reset progress</button>
+  <div style="clear:both"></div>
+
+  <div id="days"></div>
+
+  <div class="cutlist">
+    <h3>Cut list — drop these first if a day overruns, never the core journey</h3>
+    <ul>
+      <li>Gift card redemption on the storefront (admin-side gift cards already work)</li>
+      <li>Multi-currency support</li>
+    </ul>
+  </div>
+
+  <footer>Full detail in <code>6-day-completion-plan.md</code> — check-offs save automatically in this browser.</footer>
+</div>
+
+<script>
+const PLAN = [
+  {
+    id: 'd1', day: 'Day 1', date: 'Tue 1 Sep (today)', focus: 'Storefront API: auth + catalog', repo: 'api',
+    tasks: [
+      'Customer auth module: register, login, refresh, logout',
+      'OTP verification endpoint using existing OtpVerification model',
+      'JWT guard scoped to customers (separate from AdminAuthGuard)',
+      'Public category tree + brand list endpoints',
+      'Public product list endpoint (filter, sort, search, pagination)',
+      'Public product detail endpoint (variants, images, attributes, review summary)',
+      'Address book CRUD endpoints',
+    ],
+    verify: 'curl/Postman against a freshly seeded DB returns real rows for every new endpoint.',
+  },
+  {
+    id: 'd2', day: 'Day 2', date: 'Wed 2 Sep', focus: 'Storefront API: cart, checkout, orders', repo: 'api',
+    tasks: [
+      'Cart CRUD (guest cart)',
+      'Merge guest cart into customer cart on login',
+      'Coupon validate/apply endpoint',
+      'Shipping method quote endpoint (ShippingMethod/ShippingRateBand)',
+      'Checkout → order creation (Order/OrderItem), wired to existing PaymentsController',
+      'Customer order history + order detail + tracking (Shipment/ShipmentEvent)',
+      'Wishlist CRUD endpoints',
+      'Review submission endpoint (pending moderation)',
+    ],
+    verify: 'A full cart → order Postman flow works end to end without touching the DB by hand.',
+  },
+  {
+    id: 'd3', day: 'Day 3', date: 'Thu 3 Sep', focus: 'Frontend: catalog goes live', repo: 'frontend',
+    tasks: [
+      'Add typed API client (src/lib/api.ts) reading UKSHOP_API_URL',
+      'Home page rails + hero + featured sections wired to live merchandising/CMS endpoints',
+      'Category pages wired to live product list endpoint',
+      'Product listing filter/sort/search wired live',
+      'Product detail page wired live',
+      'Brand pages wired live',
+      'Remove src/data/products.json mock reads from catalogue.ts',
+      'Blog / CMS content pages (pages, blog, FAQ, testimonials) wired to live CMS endpoints',
+      'Theme: restore designs.ts to DESIGNS array + designBySlug() registry, driven by build-time THEME env var',
+      'Theme: start theme.config.ts (brand tokens, copy, feature flags), pull hardcoded Highstreet copy into it',
+    ],
+    verify: 'npm run dev — click through home → category → product → brand → blog/CMS pages with real DB data, no console errors.',
+  },
+  {
+    id: 'd4', day: 'Day 4', date: 'Fri 4 Sep', focus: 'Frontend: account, cart, checkout go live', repo: 'frontend',
+    tasks: [
+      'Login / register / forgot-password wired to Day 1 auth API',
+      'basket.ts replaced with real cart API calls',
+      'Checkout flow: address, shipping method, coupon, payment — wired end to end',
+      'Account: order history + order detail/tracking wired live',
+      'Account: address book wired live',
+      'Account: wishlist wired live',
+      'Theme: checkout/account CTAs and copy read from theme.config.ts',
+      'Theme: finish full theme.config.ts extraction — every hardcoded Highstreet string/token pulled out',
+      'Theme: write "add a new client" playbook (config + component set + env vars, no core changes)',
+    ],
+    verify: 'Place one complete real order in the browser, empty cart to confirmation screen; flip THEME locally and confirm nothing in src/lib or src/designs hardcodes Highstreet strings.',
+  },
+  {
+    id: 'd5', day: 'Day 5', date: 'Sat 5 Sep', focus: 'Admin regression + payments/shipping hardening', repo: 'admin',
+    tasks: [
+      'Regression pass: orders module against orders placed via storefront',
+      'Regression pass: products, customers, marketing, CMS, media, reports, RBAC',
+      'Verify live payment gateway flow in sandbox mode end to end',
+      'Confirm PaymentWebhookLog is actually consumed → order payment_status transitions',
+      'Verify FedEx/Evri quote flow with sandbox credentials',
+      'Rate limiting + CORS for storefront origin on all Day 1–2 endpoints',
+      'Input validation review on all new storefront endpoints',
+      'Advanced report drill-downs in admin (deeper breakdowns beyond top-level summaries)',
+      'Transactional emails beyond order confirmation (shipped, delivered, refunded) + basic marketing-email hook via notifications module',
+    ],
+    verify: 'Admin can fulfil/ship/refund a storefront order and the customer sees the update reflected back; report drill-downs return real data; a shipped/refunded order triggers its email.',
+  },
+  {
+    id: 'd6', day: 'Day 6', date: 'Sun 6 Sep', focus: 'End-to-end QA, bug bash, launch prep', repo: 'all',
+    tasks: [
+      'Full journey: browse → cart → checkout → pay → track',
+      'Full journey: admin fulfils → ships → customer tracks',
+      'Full journey: return / refund flow',
+      'Bug bash — fix highest severity first, apply cut list if time is short',
+      'Env/config audit for all three .env files',
+      'Lighthouse mobile-first budget on home, category, product, checkout',
+      'SEO checklist: meta tags, Product/Organization structured data, sitemap, robots.txt',
+      'CTA audit: above-fold primary CTA on home/category/product, sticky add-to-cart on mobile',
+      'Theme-swap smoke test: flip THEME env var locally, confirm no hardcoded-string errors',
+      'Seed a demo dataset',
+      'Write deploy checklist (build commands, migrations, required env vars)',
+      'Final sign-off against completion checklist',
+    ],
+    verify: 'All sign-off checklist items in 6-day-completion-plan.md are checked.',
+  },
+];
+
+const KEY = 'ukshop-tracker-v1';
+// Tasks completed by Claude as work lands, so the tracker reflects real progress
+// on load even before anyone opens it in a browser to click checkboxes.
+// Manual checkbox clicks are still saved on top of this via localStorage.
+const SEED_DONE = [
+  'd1-t0', 'd1-t1', 'd1-t2', 'd1-t3', 'd1-t4', 'd1-t5', 'd1-t6',
+  'd2-t0', 'd2-t1', 'd2-t2', 'd2-t3', 'd2-t4', 'd2-t5', 'd2-t6', 'd2-t7',
+  // d5-t2: PayPal is now real end-to-end - order creation confirmed against
+  // the live PayPal sandbox (GET /v2/checkout/orders back from PayPal shows
+  // the real order, correct amount and reference_id), capture/decline/
+  // webhook/idempotency all covered by e2e tests that exercise the real
+  // controller -> service -> DB path with only the outbound PayPal HTTP
+  // calls mocked at the network boundary (payment-webhooks-paypal.e2e-spec.ts,
+  // same convention as the existing FedEx/Evri gateway tests). The one leg
+  // not exercised is a real browser buyer clicking Approve on PayPal's
+  // sandbox checkout page - that needs a real sandbox personal-account
+  // login this environment doesn't have. Stripe's producer side is still
+  // not built (needs real credentials + a payment-UX decision - Elements/
+  // client_secret vs. hosted Checkout redirect). d5-t4 (FedEx/Evri sandbox
+  // quotes) stays unchecked, same reason as before: needs real credentials.
+  'd5-t0', 'd5-t1', 'd5-t2', 'd5-t3', 'd5-t5', 'd5-t6', 'd5-t7', 'd5-t8',
+  // Ad-hoc, not in the original 6-day plan's task list: the admin panel's
+  // nav only had Content/Reports/Reviews as "coming soon" stubs for pages,
+  // blog, and payments management, so this was built out as its own batch.
+  // ukshop-admin gained full CRUD UI for CMS Pages (list/create/edit,
+  // including a content-blocks section editor), Blog (posts, plus flat
+  // add-only lists for categories/authors, matching what the backend
+  // exposes), and a Payments area (Transactions/Disputes tabs, plus a
+  // Returns page with contextual Approve/Reject/Receive/Refund actions).
+  // Sidebar nav updated (Pages, Blog, Payments, Returns replacing the old
+  // Content stub) and a real bug was found and fixed in the process: nav
+  // active-state/page-title matching used first-array-match instead of
+  // longest-href-match, which would have mis-highlighted nested routes
+  // like /payments vs /payments/returns. Verified live end to end with
+  // real create/edit round-trips against the dev DB (including confirming
+  // the storefront still renders a page correctly after contentBlocks
+  // moved from a legacy plain-string shape to a structured array), plus
+  // zero ESLint/tsc errors.
+  //
+  // Second ad-hoc admin-nav batch: the remaining deferred modules from
+  // above are now built too. ukshop-admin gained: Tax rates (Catalog);
+  // Gift cards (issue/adjust balance/status, paginated+searchable);
+  // Shipping (methods with weight rate-band CRUD, plus a read-only
+  // Shipments tab - booking a real shipment needs carrier sandbox creds,
+  // same deferral as Day 5's FedEx/Evri quotes); Merchandising (Hero
+  // slides + trust badges, Banners, Featured sections incl. a manual
+  // product-ID picker); Menus (header/footer items with parent nesting,
+  // plus a mega-menu column/link editor - verified live with a real
+  // save round-trip); FAQs & support (FAQ categories/questions,
+  // testimonials, and an enquiries inbox with status updates); Admin
+  // users (team members + roles with a permission-checkbox editor,
+  // self-delete guarded both client- and server-side); and real
+  // Reviews moderation (approve/reject/delete) and a Reports dashboard
+  // (sales trend, products, customers, inventory, orders, category/brand,
+  // coupons, geography) replacing their old "coming soon" stubs - the
+  // now-unused ComingSoon component was deleted as an orphan.
+  // Two real bugs were found and fixed along the way: the new gift-cards
+  // page requested perPage=200 against an API capped at 100 (fixed to
+  // 100), and a genuine pre-existing backend bug in
+  // shipments.controller.ts where `@Query('orderId', new ParseIntPipe(
+  // { optional: true }))` threw "numeric string is expected" even with
+  // the param entirely absent - replaced with a proper ListShipmentsQueryDto
+  // (the DTO-based query pattern already used everywhere else in this
+  // codebase), confirmed fixed via direct curl before and after. Verified
+  // live end to end for every module against the dev DB (including a real
+  // mega-menu panel save), zero ESLint/tsc errors across both repos. The
+  // "Orders 12" and "Reviews 6" sidebar badges are pre-existing static
+  // decoration, not live counts - noticed while verifying Reports/Reviews
+  // against a dev DB that in fact only has 3 unpaid orders and 0 reviews.
+  //
+  // Homepage composition system (user-requested, referencing a homepage-
+  // builder screenshot from another product): a new HomepageSection table
+  // (type, label, sortOrder, isVisible, config JSON) drives which of 11
+  // section types render on the storefront homepage, in what order, and
+  // (via config) which underlying content they pull - FEATURED_PRODUCTS
+  // points at a FeaturedSection by slug, BANNERS at a Banner `position`,
+  // NEWSLETTER carries its own heading/body. Content stays in the tables
+  // built in the previous batch (Hero, Testimonials, Blog, FAQs, Banners);
+  // this table only adds ordering/visibility on top, per an explicit
+  // scoping decision to keep Merchandising/Blog/FAQ pages as the content
+  // source and add this as a thin composition layer, not a replacement.
+  // New ukshop-admin "Homepage" page (Marketing group) lists all 11 with
+  // up/down reorder buttons (not drag-and-drop - no DnD library in this
+  // app, and reorder buttons are simpler/more reliably correct than
+  // rolling native HTML5 drag-and-drop for one page), a visibility toggle,
+  // and an "Edit content" action that's a config dialog for the 3 types
+  // with real settings (FEATURED_PRODUCTS/BANNERS/NEWSLETTER) or a link
+  // to the existing content page for the other types (Hero/Testimonials
+  // both link to Merchandising, Blog to /blog, FAQs to /support-content).
+  // ukcshop's Home.tsx was rewired from a fixed 19-section JSX tree to
+  // render these 11 sections as one ordered, admin-driven group right
+  // after the header, followed by the 7 remaining bespoke marketing
+  // sections (category showcase, gaming rigs, laptop cards, network/
+  // accessories chips, buying guides, SEO+special-offer) unchanged and
+  // out of the reorder system, per an explicit user decision to group the
+  // dynamic sections together rather than leave them interleaved at their
+  // old scattered positions. This closed two pre-existing "admin panel
+  // exists but storefront never reads it" gaps found along the way: the
+  // trust strip was hardcoded JSX ignoring the real HeroTrustBadge table,
+  // and the `banners` the /home API already returned were never rendered
+  // anywhere. Testimonials, blog highlights and FAQs on the homepage are
+  // now real data too (previously hardcoded REVIEWS/TECH_HUB/FAQS arrays
+  // in homepage-content.ts, now unused by Home.tsx but left in place since
+  // Home-01.tsx and ProductPage.tsx still reference them). Verified live
+  // end to end: reorder, visibility toggle, and all three config dialogs
+  // confirmed via direct API calls and in the admin UI; the storefront
+  // homepage screenshotted section-by-section showing every one of the 11
+  // sections rendering real seeded data in the right place, and a visibility
+  // toggle confirmed to actually hide/show the trust strip on reload.
+  // Zero ESLint/tsc errors across all three repos (api, admin, ukcshop).
+  //
+  // Follow-up, same day: added a live storefront preview to the Homepage
+  // page - an iframe next to the section list (NEXT_PUBLIC_STOREFRONT_URL
+  // env var, defaulting to localhost:3002 like every other dev default in
+  // this app) that remounts (via a `key` bump) right after every save -
+  // toggle, reorder, or a config dialog - so the preview reflects the
+  // last saved state within about a second. Deliberately not a live-
+  // before-save preview (postMessage overrides or a draft-state mechanism
+  // the storefront reads instead of committed rows) - saves here already
+  // commit immediately with no separate publish step, so that complexity
+  // wouldn't buy much. Verified live: toggling Trust strip's visibility
+  // flipped the toggle to "Hidden" and the iframe reloaded with a
+  // different (real) hero slide, confirming a genuine fresh load rather
+  // than a cached frame. Zero ESLint/tsc errors.
+  //
+  // Follow-up: reworked the Homepage page's layout on request - the
+  // section list is now a fixed 380px column and the live preview grows
+  // to fill the rest (was the reverse, list flex-1 / preview fixed 420px),
+  // and each list row became a two-line stack (icon+label on top, toggle+
+  // edit-content below a divider) since a single row of move-buttons +
+  // number + icon + label + toggle + button no longer fit the narrower
+  // 380px column without wrapping badly. Also added a route-based sidebar
+  // collapse: AppShell now passes collapsed={pathname === "/homepage"} to
+  // DesktopSidebar, which renders an icon-only ~72px rail (labels swap for
+  // a base-ui Tooltip on hover, same render-prop pattern already used for
+  // DropdownMenuTrigger elsewhere) instead of the usual 264px width, only
+  // on this one page - reclaiming width for the preview automatically,
+  // no manual toggle to remember. Fixed a real a11y regression caught
+  // while verifying: the collapsed nav links initially had no accessible
+  // name (icon-only, no text, no aria-label) - added aria-label={item.
+  // label} when collapsed. Verified live: hover-tested via the CDP hover
+  // tool (a plain dispatched PointerEvent doesn't trigger base-ui's real
+  // hover-intent tooltip, real hover does) confirming the "Products"
+  // tooltip renders, and confirmed the sidebar returns to full width with
+  // labels on every other page (checked /products). Zero ESLint/tsc errors.
+  //
+  // Follow-up: the user flagged 6 sections still missing from the admin's
+  // Homepage list - Shop by category, Shop by need, Level up your gaming,
+  // Laptops for work/study/play, the buying guides block, and the SEO
+  // intro + special offer block. These were the remaining "bespoke, no
+  // natural table" sections deliberately left out of the original 11 (see
+  // the "Homepage composition system" entry above) since their content is
+  // still hardcoded arrays in homepage-content.ts, not admin-editable
+  // yet. Rather than build content editors for each (a much bigger task,
+  // not what was asked), extended HomepageSectionType with 6 new values
+  // (CATEGORY_SHOWCASE, SHOP_BY_NEED, GAMING_SHOWCASE, LAPTOP_SHOWCASE,
+  // BUYING_GUIDES, SEO_INTRO) so they get ordering + visibility control
+  // like the fully-automatic ones (Deals, New arrivals, Brands) - "No
+  // settings" in the admin list, content still fixed. Moved their JSX out
+  // of Home.tsx's hardcoded tail and into the same renderSection() switch
+  // as everything else, seeded at sortOrder 11-16 (continuing right after
+  // Newsletter) so nothing moved on deploy. Two sections stay genuinely
+  // fixed since the user didn't name them: the Business/Refurbished split
+  // banner and the Network/Accessories split - both still hardcoded JSX
+  // after the dynamic block. Verified live: all 17 rows appear in the
+  // admin list with correct icons/descriptions, and the storefront was
+  // screenshotted through the full new sequence (Shop by category ->
+  // Shop by need -> gaming tiers -> laptop cards -> buying guides -> SEO
+  // + special offer -> the two still-fixed splits -> Footer) confirming
+  // no duplication or gaps. Zero ESLint/tsc errors across all three repos.
+  //
+  // Follow-up: set a considered default order for all 17 sections and
+  // confirmed every one is visible (the user had already dragged "Shop by
+  // category" up to right after Trust strip via the admin UI itself -
+  // kept that placement rather than overriding it). Final order: Hero,
+  // Trust strip, Shop by category, Today's deals, Best sellers, New
+  // arrivals, Level up your gaming, Laptops for work/study/play, Shop by
+  // need, Promotional banners, Shop by brand, Customer testimonials,
+  // Buying guides, SEO intro & special offer, Latest from the blog, FAQs,
+  // Newsletter signup - trust/intro first, conversion-heavy sections
+  // (deals, bestsellers, category/thematic browsing) while attention is
+  // highest, secondary browsing and trust content in the middle, lower-
+  // intent content (blog, FAQs) last with Newsletter as the final CTA
+  // right before the footer. Applied via the reorder endpoint and
+  // confirmed live on the storefront (Hero -> Trust strip -> Shop by
+  // category, matching the new order exactly).
+  //
+  // Follow-up: the user asked how to control the hero carousel from the
+  // admin, and the honest answer was "you currently can't" - Hero.tsx had
+  // a hardcoded SLIDES array (eyebrow/image/tone/dual CTAs) completely
+  // disconnected from the HeroSlide table, the same "admin exists but
+  // storefront never reads it" gap as the trust strip and banners, just
+  // not caught yet. Fixed properly, as asked: extended HeroSlide with
+  // eyebrow, image, imagePosition, tone (new HeroSlideTone enum: VIOLET/
+  // ELECTRIC/CYAN/CRIMSON, matching the 4 CSS hero-tone-* classes that
+  // actually exist), secondaryCtaLabel and secondaryCtaUrl - migration
+  // applied. Reseeded (once, gated on detecting the old 3-slide
+  // placeholder state) with the exact 4 real slides from the old SLIDES
+  // array so nothing changed visually. Hero.tsx now takes `slides` as a
+  // prop from the live /home bundle instead of the hardcoded array, and
+  // Home.tsx passes homeRes.data?.home.hero.slides through; removed a
+  // now-redundant clamp-index effect along the way (render already does
+  // Math.min(activeIndex, slides.length-1), so the effect was a set-
+  // state-in-effect lint violation for no reason).
+  //
+  // Image upload reused the exact pattern from the branding-logo uploader
+  // (POST /api/media, ownerType LIBRARY) in a new "hero-slides" collection.
+  // This surfaced a real, previously-unexercised gap: admin-uploaded media
+  // is stored on the API server and served statically at its own origin
+  // (<api-origin>/uploads/*, via useStaticAssets in bootstrap.ts) - not
+  // under /api/v1, and not through the auth-gated admin proxy. ukcshop's
+  // api.ts stored these as bare relative paths with no origin, which would
+  // 404 in the browser (ukcshop's own origin doesn't serve /uploads/*).
+  // Added a resolveMediaUrl() helper in ukcshop's api.ts that prefixes the
+  // API origin only for /uploads/ paths, leaving the seeded /images/...
+  // paths (bundled in ukcshop's own public/ folder) untouched - both cases
+  // now resolve correctly from one function. This same fix would apply to
+  // real product images whenever those get uploaded (currently untested,
+  // no real product has one yet) - not fixed here since it wasn't asked,
+  // but worth knowing the same gap exists there.
+  //
+  // Testing the upload end-to-end (a generated test JPEG, via the file
+  // upload flow in chrome-devtools-mcp) surfaced a second real bug: Next/
+  // Image refuses remote hostnames that aren't explicitly allow-listed,
+  // and ukcshop's next.config.ts had no `images` config at all. Fixed by
+  // deriving images.remotePatterns from the same server-only UKSHOP_API_URL
+  // used everywhere else, scoped to the /uploads/** path. This requires a
+  // dev-server restart to take effect (Next doesn't hot-reload config
+  // files) - the running ukcshop dev server (in the user's own terminal,
+  // not something I should kill unprompted) needs a manual restart before
+  // uploaded hero images will actually render; verified everything up to
+  // that point via the network tab (upload -> PATCH -> correct absolute
+  // URL in the request body) and reverted the test upload back to the
+  // original seeded image afterward. Admin form now has all the new
+  // fields (eyebrow, image upload with a live preview thumbnail, focal-
+  // point text field, tone dropdown, dual CTA label+URL pairs) and the
+  // hero slide list shows a thumbnail per row. Zero ESLint/tsc errors
+  // across all three repos.
+  //
+  // Follow-up: replaced the Orders page's 4 plain KPI cards (total/
+  // awaiting payment/AOV/processed revenue) with 8 colour-coded status
+  // cards per a reference screenshot - Total Order, Pending Payment,
+  // Processing, Shipped, Delivered, Cancel, Returned, Failed - each a
+  // solid pastel Tailwind-default-palette card (a deliberate one-off
+  // departure from the app's usual semantic-token colours, to match the
+  // reference image) with a white circular icon badge. Extended
+  // OrdersService.summary() with per-status counts (processing/shipped/
+  // delivered/cancelled/failed) plus a total OrderItemReturn count for
+  // "Returned" (there's no RETURNED order status - PENDING and PACKED
+  // statuses have no card, matching what was actually asked for rather
+  // than a literal 1:1 OrderStatus enum mapping). "Pending Payment" reuses
+  // the existing awaitingPayment (order status AWAITING_PAYMENT) metric.
+  //
+  // Verifying this live surfaced a real, pre-existing bug unrelated to the
+  // cards: the Orders table showed "Orders (0) / No orders yet" even
+  // though 3 real orders exist. Root cause - the paginated-list API shape
+  // is `{ data: Order[], meta }` (the global ResponseInterceptor unwraps
+  // `{items, meta}` service returns into `{data: items, meta}`, with meta
+  // as a sibling of data, not nested inside it), but orders-page.tsx's
+  // `unwrap<{items,meta}>(payload).items` assumed data itself was an
+  // `{items, meta}` object - it's an array, so `.items` was always
+  // undefined. Fixed both occurrences (the main load() and the CSV
+  // export) to read `payload.data`/`payload.meta` directly. Confirmed
+  // fixed live - "Orders (3)" now lists all 3 real orders. Zero ESLint/
+  // tsc errors (one unrelated pre-existing error in src/app/attributes/
+  // page.tsx, from what looks like the user's own in-progress work on a
+  // separate Attributes feature - left untouched, not part of this ask).
+  // Noted for later: this only covers ukcshop's homepage. SDShop (a second
+  // storefront planned to reuse this same admin panel and API with its own
+  // design) would need its own Home page wired to the same
+  // `homepageSections` field in the /home bundle - the section types and
+  // config shapes are already storefront-agnostic for that reason, but the
+  // actual wiring hasn't been done since sdshop-store isn't built yet.
+  // d3-t6 (remove products.json from catalogue.ts) stays unchecked - Day 4
+  // moved basket/wishlist to the real cart/wishlist API, but compare and
+  // header-search have no backend equivalent by design and still read the
+  // mock PRODUCTS array, so catalogue.ts can't be fully removed yet.
+  // Course-corrected from an earlier session note that favoured ukshop-store's
+  // [design] URL-routing: since each client gets its own deployment (not one
+  // deployment previewing many themes), a /highstreet/ URL prefix on every
+  // production page would only hurt SEO/UX for no real benefit. designs.ts
+  // (DESIGNS array, designBySlug/isDesignSlug, getActiveDesign) is now driven
+  // by a build-time THEME env var per the plan's original wording, with clean
+  // unprefixed URLs - no [design]/ route segment needed. theme.config.ts
+  // extraction (brand/contact/features) is wired everywhere those values are
+  // referenced across the design components.
+  'd3-t0', 'd3-t1', 'd3-t2', 'd3-t3', 'd3-t4', 'd3-t5', 'd3-t6', 'd3-t7', 'd3-t8', 'd3-t9',
+  // Day 4: login/register/forgot-password, real cart (src/lib/cart.ts),
+  // checkout (address/shipping/coupon-preview/order creation), order
+  // history + tracking, address book (list/add/delete), wishlist (customer-
+  // only, no guest wishlist support server-side) all wired to the real API
+  // and live-tested end to end (register -> add to cart -> checkout ->
+  // track order -> sign out). Found and fixed two real bugs along the way:
+  // the storefront order total was double-counting VAT (catalogue prices
+  // are VAT-inclusive; checkout was also adding VAT on top - fixed in
+  // orders.service.ts) and a concurrent-401 race that could wrongly log a
+  // customer out (two requests refreshing the same rotating token at once -
+  // fixed by de-duping concurrent refreshes in storefront-client.ts).
+  // theme.config.ts gained paymentMethods + brand.about; docs/new-client-
+  // playbook.md written. d4-t2 (checkout payment step) stays a visual
+  // placeholder on purpose - matches Day 5's already-documented deferral of
+  // real Stripe collection (needs sandbox creds + a payment-UX decision).
+  'd4-t0', 'd4-t1', 'd4-t2', 'd4-t3', 'd4-t4', 'd4-t5', 'd4-t6', 'd4-t7', 'd4-t8',
+  // Follow-up: redesigned the admin Order Details popup to match the
+  // structure of a reference dashboard (sellzy-dashboard-next.netlify.app/
+  // orders/73423) - explicitly the layout only, not its colours, per the
+  // ask. Converted OrderDrawer from a right-anchored slide-out
+  // (max-w-xl <aside>) to a centred wide modal (max-w-5xl), keeping the
+  // existing hand-rolled backdrop-button + Escape-key-close pattern rather
+  // than switching to the shared Dialog primitive. New layout: order number
+  // + payment/order status pills + the existing "Change status" dropdown in
+  // the header; 3 stat cards (Order Date, Total Items as a real quantity
+  // sum rather than items.length, Delivery Date derived from the first
+  // statusHistory entry with toStatus === DELIVERED); a two-column section
+  // with a proper items <table> (Product/Category/Qty/Price/Subtotal) on
+  // the left and an Order Summary box reusing the existing Total
+  // sub-component on the right; a Customer Information card (initials
+  // avatar + icon-prefixed email/phone/address rows); and an Order Tracking
+  // vertical timeline built from statusHistory, most-recent entry shown
+  // filled/checked. All colours use the app's own design tokens (accent-
+  // tint, positive-tint, neutral-tint, canvas, ink-*) - none of Sellzy's
+  // palette.
+  //
+  // Needed two backend additions that already existed as unused data:
+  // added product.category to OrdersService's detailInclude (statusHistory
+  // and paymentTransactions were already being fetched but the frontend
+  // type/JSX never used them), and extended the frontend OrderDetail type
+  // to match. Confirmed the admin's /api/orders/[id] route is a plain
+  // pass-through of the backend's { data: <order> } shape, so unwrap() is
+  // correct there - unlike the paginated list endpoint fixed in the
+  // previous entry, this is not the same bug. Zero ESLint/tsc errors in
+  // both repos; verified live (order UKMTJ0XJB6362E) with a screenshot
+  // matching the intended structure.
+  //
+  // Follow-up: the Attributes page's per-value Actions column (two loose
+  // Pencil/Trash icon buttons) was swapped for the same MoreHorizontal "..."
+  // dropdown-menu pattern (Edit value / Delete) already used on the
+  // Categories page, per a direct ask to make the two consistent. Scoped to
+  // just that inner values table - the attribute-group-level actions
+  // (Filterable toggle + Pencil/Trash next to the group title) weren't part
+  // of the ask and were left as-is. Verified live: dropdown opens with the
+  // right items in the right place.
+  //
+  // Follow-up: added a Stock management screen (Catalog > Stock), after
+  // confirming with the user this was worth building rather than editing
+  // stock through each product's edit form one variant at a time. Deliberately
+  // scoped down from the PrestaShop-style reference discussed: no Reserved/
+  // Available split and no Movements/audit-trail tab, since the schema has no
+  // reservation or stock-movement concept behind those - only stockQty and
+  // lowStockThreshold per variant. Backend: one new endpoint,
+  // GET /admin/products/stock, returning a flat, paginated list of every
+  // variant joined to its parent product (title, sku, supplier), with q
+  // search (product title/sku, variant title/barcode) and a lowStockOnly
+  // filter; declared before the existing GET /admin/products/:id route so
+  // Nest's route matching doesn't swallow "stock" as an :id. Reused the
+  // codebase's established full-fetch-then-JS-filter-then-slice pagination
+  // idiom (same pattern as OrdersService.abandonedCarts) rather than raw SQL,
+  // since Prisma can't compare two columns of the same row (stockQty vs
+  // lowStockThreshold) in a `where` filter directly. No new bulk-update
+  // endpoint was added - both the single-row save and the "apply to
+  // selected" bulk action reuse the existing
+  // PATCH /admin/products/:id/variants/:variantId endpoint (which already
+  // accepts stockQty), fired once per row for bulk. Frontend: new /stock
+  // page and nav entry under Catalog, modelled on the Orders page's
+  // server-paginated/debounced-search pattern rather than the Categories
+  // page's fetch-all-then-filter-client-side pattern, since this list is
+  // 1500+ variants rather than a few dozen categories. Zero tsc errors;
+  // verified live end to end - search, low-stock filter (correctly empty,
+  // since seeded stock is all above threshold), a single-row save, and a
+  // 2-row bulk apply all confirmed against the real database.
+  //
+  // Frontend audit batch (2026-09-14/15): a direct code-inspection pass over
+  // ukcshop (docs/customer-journey-audit.md) found five gaps the Day 3/4
+  // checkmarks didn't actually cover end to end, all now closed.
+  //
+  // Site search: Header.tsx's search box previously had nowhere real to
+  // send a query. It now calls router.push(href.category({ q: query })),
+  // and CategoryPage.tsx fetches with that q, showing "Search results for
+  // …". Backend q filter (storefront-products.service.ts) extended to also
+  // match mpn and brand.title (was title/shortDescription/sku only).
+  // Verified live: MPN-only search, brand-name search, and the no-match
+  // empty state all return correct results. catalogue.ts's mock PRODUCTS
+  // array is no longer in the search path itself - it's still imported in
+  // Header.tsx for the category-tree mega-menu and an instant suggestion
+  // list, and still fully backs Compare, so d3-t6 (remove products.json
+  // from catalogue.ts) correctly stays unchecked.
+  //
+  // Reviews on the frontend: ProductPage.tsx read from hardcoded REVIEWS/
+  // DIST arrays; it now fetches real reviews via a new /api/reviews proxy
+  // (GET /reviews?productId=) - average rating, star distribution, and
+  // review cards (name, verified-buyer flag, date) all real, with an honest
+  // empty state. Added a "Write a review" form (rating + optional title/
+  // comment) gated behind sign-in. Verified end to end live: submitted a
+  // review -> created PENDING -> correctly hidden from the public list ->
+  // approved via the admin reviews endpoint -> appears with real average/
+  // distribution. Not done: no verified-purchase linking (orderItemId left
+  // unset - needs cross-referencing order history) and the product
+  // summary's own rating/reviews fields don't live-recompute on submission
+  // (expected - new reviews stay pending until moderated).
+  //
+  // Payment collection: this retroactively completes d4-t2, which Day 4's
+  // own note above flagged as "a visual placeholder on purpose." It no
+  // longer is. Checkout's Payment step now calls the real GET /payments/
+  // methods and shows genuine PayPal availability instead of a disabled
+  // fake card form. "Pay with PayPal" places the order (AWAITING_PAYMENT),
+  // creates a payment attempt, and redirects to PayPal's real hosted
+  // checkout; on return, the order is restored from sessionStorage (covers
+  // both guests and logged-in customers across the full-page round trip)
+  // and captured - success shows the paid confirmation, decline/cancel
+  // shows a clear error with a retry that reuses the same order rather than
+  // duplicating it. New src/lib/payments-api.ts client; fixed a real
+  // pre-existing bug in storefront-client.ts's rawRequest() that silently
+  // dropped caller-supplied headers (needed for Idempotency-Key). Verified
+  // fully live against the real PayPal Sandbox already configured on this
+  // backend: order -> attempt -> real redirect to sandbox.paypal.com with
+  // the correct amount -> capture, error, and retry all behave correctly.
+  // Also fixed a hydration-mismatch bug (reading sessionStorage during
+  // initial render differed server vs. client). Stripe/2Checkout remain
+  // settings-only placeholders with no capture logic (see the Day 5 note
+  // above), so the frontend intentionally still offers PayPal alone. The
+  // coupon field in Section 3 of the audit is still genuinely missing from
+  // both BasketPage.tsx and CheckoutPage.tsx despite d4-t2 being checked -
+  // same "checked at the flow level, one sub-part deferred" pattern as the
+  // original Day 4 note, just a different sub-part now that payment itself
+  // is real.
+  //
+  // Returns/RMA and customer-side order cancellation: the OrderItemReturn
+  // data model and admin approve/receive/refund flow already existed, but
+  // nothing could ever create one, and there was no cancel path at all.
+  // Added POST /returns (new storefront/returns API module) that creates an
+  // OrderItemReturn for a delivered order's item, gated on returnEligible,
+  // returnDeadline, ownership, and no existing active request; and PATCH
+  // /orders/:uuid/cancel, allowed only while status is PENDING/
+  // AWAITING_PAYMENT/PROCESSING, which restocks the reserved variant
+  // quantity and writes an order-cancelled email. OrderDetailPage.tsx now
+  // shows a "Cancel order" button (with confirmation) while cancellable,
+  // and a "Request return" button per item once DELIVERED (inline reason +
+  // optional comment form), or the request's current status once one
+  // exists. Footer's "Warranty & RMA" link, previously href="#", now goes
+  // to the account orders tab. Also fixed a real pre-existing backend bug
+  // found in the process: admin's refund action never actually set
+  // returnStatus to REFUNDED, so returns stayed stuck at RECEIVED forever
+  // after being refunded. Not done: guest orders have no way to request a
+  // return or cancellation (the customer orders API is login-only by
+  // design, unchanged by this work).
+  //
+  // Newsletter signup: the footer's email field was confirmed genuinely
+  // dead (onSubmit={(e) => e.preventDefault()}, no API call, no subscriber
+  // storage anywhere). Added a NewsletterSubscriber model and a public
+  // POST /newsletter/subscribe endpoint (no auth - guests subscribe too;
+  // idempotent upsert so resubmitting an existing email doesn't error).
+  // Footer.tsx's form now calls it via a new subscribeNewsletter() in
+  // storefront-client.ts, with inline loading/success/error states
+  // replacing the no-op. Also added a read-only admin "Subscribers" page
+  // (Marketing nav) so collected emails are actually visible somewhere, not
+  // just rows in a table nobody can see. Verified live: valid email -> 201
+  // stored, invalid email -> 400, admin list without auth -> 401. Not done:
+  // no unsubscribe flow and no actual campaign-sending capability - this
+  // closes the signup gap only, matching what Section 8 of the audit
+  // actually asked for.
+  //
+  // d3-t6 completed (2026-09-15): catalogue.ts's mock products.json
+  // dependency is now fully removed - the last thing keeping this task at
+  // 90%. A full audit of every remaining `@/lib/catalogue` importer found
+  // seven real (non-pure) consumers left, each fixed with a live equivalent
+  // rather than a shortcut:
+  //   - Header.tsx's two loading-state fallbacks (mock tree, mock product
+  //     count) now just show empty/blank until the real /api/categories
+  //     and /api/products calls land, instead of briefly flashing wrong
+  //     mock content (this catalogue has 6 departments incl. "Software",
+  //     not the mock's fixed set).
+  //   - basket.ts's Recent.products() (byId-backed) and QuickView.tsx's
+  //     byId(id) lookup were both silently broken for any real product id
+  //     (byId only ever resolved against the 104-item mock array) - fixed
+  //     by adding a real `ids` filter to the storefront products endpoint
+  //     (preserves requested order, reuses the service's existing byIds()
+  //     internally) and switching both call sites to fetch by id live.
+  //     Recent.products() itself had zero remaining callers once
+  //     BasketPage.tsx moved to the live fetch, so it was deleted outright
+  //     rather than migrated.
+  //   - AccountPage.tsx, BasketPage.tsx (empty-basket rail) and
+  //     AuthPromo.tsx's "recommended" rails all scored the mock catalogue
+  //     by fake sold/rating weights. Replaced with one new, honest
+  //     GET /products/recommended endpoint backed by the storefront
+  //     service's existing bestSellers() - real popular products, not a
+  //     fabricated personalisation score.
+  //   - Home.tsx's three remaining mock reads: allBrands() -> the same
+  //     live /api/brands + ApiBrand-to-BrandSummary mapping already used
+  //     by BrandsPage.tsx/BrandPage.tsx; specialOffer() -> a new
+  //     `discount_desc` sort option on the products endpoint (computes
+  //     real (price-salePrice)/price per candidate, same in-memory-sort
+  //     pattern the endpoint already used for price_asc/price_desc), so
+  //     the homepage countdown card now shows the actual biggest live
+  //     discount instead of the mock's; countIn(subcategory) for the
+  //     LAPTOP_CARDS showcase -> reused the category tree Home.tsx already
+  //     fetches for the category tiles, via the existing findCategory()
+  //     helper reading each node's real productCount - zero new fetches.
+  //   - Compare (basket.ts) was confirmed NOT a gap: it already stores full
+  //     product snapshots taken at toggle-time specifically because no
+  //     by-ids lookup existed - a deliberate, correct workaround, not a
+  //     mock fallback. Left untouched (the new `ids` filter would let this
+  //     become URL-shareable later, but that's a separate feature nobody
+  //     asked for here).
+  //   - Two files were confirmed fully dead (zero importers anywhere) and
+  //     deleted rather than migrated: Home-01.tsx (the live homepage is
+  //     Home.tsx; Home-01 was pre-existing dead weight) and lib/orders.ts
+  //     (fabricated order history superseded by lib/account-api.ts back on
+  //     Day 4, never actually imported since).
+  // catalogue.ts itself is now four pure formatting functions (money,
+  // exVat, stars, stockText) with no data dependency; src/data/products.json
+  // and the now-empty src/data/ directory were deleted. Verified live in a
+  // real browser end to end, not just tsc: homepage showed "621 products in
+  // stock" (was hardcoded 104), Shop-by-brand tiles with real per-brand
+  // counts, the special-offer card showing the actual top live discount
+  // (McAfee 360 Standard, matched exactly against a direct API call),
+  // Gaming/Business Laptops showing real counts (20/20) vs. Student/
+  // Refurbished correctly showing 0 (genuinely empty in this seed data, not
+  // a broken lookup), and the basket page's "Recommended for you" and
+  // "Recently viewed" rails both rendering real products - the latter
+  // showing products actually browsed earlier in the same session, proving
+  // the id-based live fetch round-trips correctly end to end. Zero tsc
+  // errors; a full `eslint src/` sweep shows only pre-existing issues in
+  // files this work didn't touch (a shared `mounted`-guard hydration
+  // pattern used app-wide, and a couple of unrelated no-html-link-for-pages
+  // warnings), none introduced by this change. Noted but out of scope,
+  // pre-existing and separate from this task: QuickView.tsx's fix is
+  // correct but currently unreachable - nothing in the app calls
+  // openQuickView(id) today, so the component (fixed here) has no live
+  // trigger to exercise it from the UI.
+];
+const seed = Object.fromEntries(SEED_DONE.map((id) => [id, true]));
+const state = { ...seed, ...JSON.parse(localStorage.getItem(KEY) || '{}') };
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+const repoLabel = { api: 'API', admin: 'Admin', frontend: 'Frontend', all: 'All repos' };
+
+function taskId(dayId, i) { return dayId + '-t' + i; }
+
+function render() {
+  const daysEl = document.getElementById('days');
+  daysEl.innerHTML = '';
+  let totalTasks = 0, totalDone = 0;
+
+  PLAN.forEach((d, di) => {
+    const done = d.tasks.filter((_, i) => state[taskId(d.id, i)]).length;
+    totalTasks += d.tasks.length; totalDone += done;
+    const pct = Math.round((done / d.tasks.length) * 100);
+
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'day' + (state['open-' + d.id] ? ' open' : (di === 0 ? ' open' : ''));
+    dayDiv.innerHTML = `
+      <div class="day-head" data-toggle="${d.id}">
+        <div class="day-title">
+          <span class="chev">&#9656;</span>
+          <span class="d">${d.day}</span>
+          <span class="date">${d.date}</span>
+          <span class="focus">— ${d.focus}</span>
+        </div>
+        <div class="day-progress">
+          <span class="repo-tag repo-${d.repo}">${repoLabel[d.repo]}</span>
+          <div class="progress-bar" style="flex:1"><div style="width:${pct}%"></div></div>
+          <span class="pct">${pct}%</span>
+        </div>
+      </div>
+      <div class="day-body">
+        ${d.tasks.map((t, i) => {
+          const id = taskId(d.id, i);
+          const checked = !!state[id];
+          return `<div class="task${checked ? ' done' : ''}">
+            <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} data-task="${id}">
+            <label for="${id}">${t}</label>
+          </div>`;
+        }).join('')}
+        <div class="verify"><b>Verify:</b> ${d.verify}</div>
+      </div>
+    `;
+    daysEl.appendChild(dayDiv);
+  });
+
+  document.getElementById('summary').innerHTML = `
+    <div class="card"><div class="num">${totalDone}/${totalTasks}</div><div class="lbl">Tasks done</div>
+      <div class="progress-bar"><div style="width:${Math.round(totalDone/totalTasks*100)}%"></div></div></div>
+    <div class="card"><div class="num">${Math.round(totalDone/totalTasks*100)}%</div><div class="lbl">Overall complete</div></div>
+    <div class="card"><div class="num">6</div><div class="lbl">Days remaining plan</div></div>
+    <div class="card"><div class="num">Sun 6 Sep</div><div class="lbl">Deadline</div></div>
+  `;
+
+  daysEl.querySelectorAll('.day-head').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.toggle;
+      const dayDiv = el.closest('.day');
+      dayDiv.classList.toggle('open');
+      state['open-' + id] = dayDiv.classList.contains('open');
+      save();
+    });
+  });
+  daysEl.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('click', e => e.stopPropagation());
+    cb.addEventListener('change', () => {
+      state[cb.dataset.task] = cb.checked;
+      save();
+      render();
+    });
+  });
+}
+
+render();
+</script>
+</body>
+</html>

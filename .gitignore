@@ -3,6 +3,7 @@
 /node_modules
 /build
 /tmp
+/uploads
 
 # Logs
 logs
@@ -22,3 +23,8 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+
+
+# misc
+*.md
+!README.md
