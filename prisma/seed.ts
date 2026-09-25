@@ -285,32 +285,34 @@ async function main() {
   // something real to render (Day 6 will replace this with production content
   // entered through the admin panel).
   //
-  // Hero slides were extended with eyebrow/image/tone/secondary CTA fields
-  // and Hero.tsx switched from a hardcoded SLIDES array to reading these
-  // live - reseed with content matching that hardcoded array exactly (only
-  // if still at the old 3-slide placeholder state) so the storefront looks
+  // Hero slides drive the bytevex storefront's hero carousel (formerly a
+  // hardcoded SLIDES array in designs/bytevex/Hero.tsx) - reseed with content
+  // matching that hardcoded array exactly (only if still at the stale
+  // PC-parts placeholder from initial bootstrap) so the storefront looks
   // identical until an admin actually edits a slide.
-  const oldPlaceholderSlide = await prisma.heroSlide.findFirst({ where: { headline: 'Deals now live' } });
+  const oldPlaceholderSlide = await prisma.heroSlide.findFirst({ where: { headline: 'Radeon RX 9070 XT graphics, ready to perform' } });
   const heroSlideCount = await prisma.heroSlide.count();
   if (heroSlideCount === 0 || oldPlaceholderSlide) {
     if (oldPlaceholderSlide) await prisma.heroSlide.deleteMany({});
     await prisma.heroSlide.createMany({
       data: [
-        { eyebrow: 'New generation graphics', headline: 'Radeon RX 9070 XT graphics, ready to perform', subheading: 'Explore high-performance graphics cards for smooth gaming, creative work and demanding everyday builds.', image: '/images/products/Sapphire Pulse RX 9070 XT Display.webp', imagePosition: '68% center', tone: 'VIOLET', ctaLabel: 'Shop graphics cards', ctaUrl: '/category?sub=Graphics%20Cards', secondaryCtaLabel: 'Compare components', secondaryCtaUrl: '/category?cat=PC%20Components', sortOrder: 1 },
-        { eyebrow: 'Portable performance', headline: 'Gaming laptops built for the next challenge', subheading: 'Find fast displays, powerful mobile graphics and capable processors in one streamlined setup.', image: '/images/products/ASUS ROG Zephyrus G16 Gaming Setup.webp', imagePosition: '64% center', tone: 'ELECTRIC', ctaLabel: 'Shop gaming laptops', ctaUrl: '/category?sub=Gaming%20Laptops', secondaryCtaLabel: 'Browse all laptops', secondaryCtaUrl: '/category?cat=Laptops', sortOrder: 2 },
-        { eyebrow: 'Build it your way', headline: 'Airflow-focused cases for cleaner PC builds', subheading: 'Start your next system with modern layouts, considered cooling and space for the components that matter.', image: '/images/products/NZXT H5 Flow RGB Showcase.webp', imagePosition: '72% center', tone: 'CYAN', ctaLabel: 'Shop PC cases', ctaUrl: '/category?sub=Cases', secondaryCtaLabel: 'Explore components', secondaryCtaUrl: '/category?cat=PC%20Components', sortOrder: 3 },
-        { eyebrow: 'Work from anywhere', headline: 'Business laptops with everyday staying power', subheading: 'Discover dependable, travel-ready machines designed for focused work at the office, at home or on the move.', image: '/images/products/ThinkPad X1 Carbon Aura Edition Showcase.webp', imagePosition: '68% center', tone: 'CRIMSON', ctaLabel: 'Shop business laptops', ctaUrl: '/category?sub=Business%20Laptops', secondaryCtaLabel: 'View all laptops', secondaryCtaUrl: '/category?cat=Laptops', sortOrder: 4 },
+        { eyebrow: 'NEW GEN PRO MEDIA · BUILT FOR CREATORS', headline: 'Sustained speed.', headlineHighlight: 'Zero dropped frames.', subheading: 'Choose memory cards by format, capacity and speed class. Find dependable media for cameras, drones and demanding creative workflows.', ctaLabel: 'Shop SD cards', ctaUrl: '/category?cat=SD%20Cards', secondaryCtaLabel: 'Find a card for your device', secondaryCtaUrl: '#device-finder', showcaseLabel: 'PRO MEDIA / CAMERA READY', badgeLabel: 'ULTRA PRO', metrics: [{ label: 'FORMAT', value: 'SD · microSD' }, { label: 'SPEED CLASS', value: 'V30 — V90' }, { label: 'CAPACITY', value: '64 GB — 1 TB' }, { label: 'WORKFLOW', value: '4K · 8K' }], productName: 'BYTEVEX Ultra Pro 256GB', productSubline: 'Built for uninterrupted capture.', specs: ['256 GB', 'V30 · A2', '4K READY'], visualKind: 'sd', visualCapacity: '256', visualRating: 'V30 · A2', visualCompanionKind: 'micro', visualCompanionCapacity: '128', sortOrder: 1 },
+        { eyebrow: 'COMPACT FORMAT · SERIOUS PERFORMANCE', headline: 'Small card.', headlineHighlight: 'Big possibilities.', subheading: 'Reliable microSD media for drones, action cameras and handheld devices. Choose the capacity and speed your next shoot demands.', ctaLabel: 'Shop microSD cards', ctaUrl: '/category?cat=microSD%20Cards', secondaryCtaLabel: 'Find a card for your device', secondaryCtaUrl: '#device-finder', showcaseLabel: 'PRO MEDIA / CAMERA READY', badgeLabel: 'ULTRA PRO', metrics: [{ label: 'FORMAT', value: 'microSDXC' }, { label: 'SPEED CLASS', value: 'V30 · A2' }, { label: 'CAPACITY', value: '128 GB — 1 TB' }, { label: 'WORKFLOW', value: 'DRONE · ACTION' }], productName: 'BYTEVEX microSD Ultra 256GB', productSubline: 'Capture more from every angle.', specs: ['256 GB', 'V30 · A2', '4K READY'], visualKind: 'micro', visualCapacity: '256', visualRating: 'V30 · A2', visualCompanionKind: 'sd', visualCompanionCapacity: '128', sortOrder: 2 },
+        { eyebrow: 'PRO WORKFLOWS · HIGH-BITRATE READY', headline: 'Keep rolling.', headlineHighlight: 'At full speed.', subheading: 'Move into demanding cinema and mirrorless workflows with high-throughput CFexpress media built for long takes and fast transfers.', ctaLabel: 'Shop CFexpress', ctaUrl: '/category?cat=CFexpress%20Cards', secondaryCtaLabel: 'Find a card for your device', secondaryCtaUrl: '#device-finder', showcaseLabel: 'PRO MEDIA / CAMERA READY', badgeLabel: 'ULTRA PRO', metrics: [{ label: 'FORMAT', value: 'CFexpress' }, { label: 'RATING', value: 'VPG 400' }, { label: 'CAPACITY', value: '256 · 512 GB' }, { label: 'WORKFLOW', value: 'CINEMA · RAW' }], productName: 'BYTEVEX CFexpress Pro 512GB', productSubline: 'Made for demanding capture.', specs: ['512 GB', 'VPG 400', 'RAW READY'], visualKind: 'cf', visualCapacity: '512', visualRating: 'VPG 400', visualCompanionKind: 'cf', visualCompanionCapacity: '256', sortOrder: 3 },
+        { eyebrow: 'FROM CAMERA TO EDIT · WITHOUT WAITING', headline: 'Finish the shot.', headlineHighlight: 'Keep the flow.', subheading: 'Pair your cards with fast, dependable readers and spend less time moving files between camera, studio and edit suite.', ctaLabel: 'Shop card readers', ctaUrl: '/category?cat=Card%20Readers%20%26%20Hubs', secondaryCtaLabel: 'Find a card for your device', secondaryCtaUrl: '#device-finder', showcaseLabel: 'PRO MEDIA / CAMERA READY', badgeLabel: 'READER PRO', metrics: [{ label: 'FORMAT', value: 'MULTI-CARD' }, { label: 'INTERFACE', value: 'USB-C' }, { label: 'TRANSFER', value: '10 GB/S' }, { label: 'WORKFLOW', value: 'INGEST · EDIT' }], productName: 'BYTEVEX Reader Pro', productSubline: 'Get to the edit faster.', specs: ['USB-C', '10 Gb/s', 'PRO INGEST'], visualKind: 'reader', visualCapacity: 'USB-C', visualRating: '10 Gb/s', visualCompanionKind: 'sd', visualCompanionCapacity: '256', sortOrder: 4 },
       ],
     });
   }
+  const oldPlaceholderBadge = await prisma.heroTrustBadge.findFirst({ where: { label: 'Free UK next-day delivery' } });
   const heroBadgeCount = await prisma.heroTrustBadge.count();
-  if (heroBadgeCount === 0) {
+  if (heroBadgeCount === 0 || oldPlaceholderBadge) {
+    if (oldPlaceholderBadge) await prisma.heroTrustBadge.deleteMany({});
     await prisma.heroTrustBadge.createMany({
       data: [
-        { label: 'Free UK next-day delivery', icon: 'i-truck', sortOrder: 1 },
-        { label: '30-day returns', icon: 'i-shield', sortOrder: 2 },
-        { label: '0% finance available', icon: 'i-card', sortOrder: 3 },
-        { label: 'Manchester showroom', icon: 'i-wrench', sortOrder: 4 },
+        { label: 'Format-first shopping', icon: 'shield-check', sortOrder: 1 },
+        { label: 'Clear product specifications', icon: 'package-check', sortOrder: 2 },
+        { label: 'Help choosing media', icon: 'headphones', sortOrder: 3 },
+        { label: 'Delivery options at checkout', icon: 'truck', sortOrder: 4 },
       ],
     });
   }
@@ -354,6 +356,17 @@ async function main() {
       ],
     });
   }
+  // bytevex's hero dispatch bar + trust line moved from hardcoded JSX into
+  // the HERO section's config - merge these keys into the existing row
+  // (created above, or from an earlier seed run) without touching `cards`.
+  const heroSection = await prisma.homepageSection.findFirst({ where: { type: 'HERO' } });
+  if (heroSection && (heroSection.config as Record<string, unknown> | null)?.dispatchText === undefined) {
+    await prisma.homepageSection.update({
+      where: { id: heroSection.id },
+      data: { config: { ...(heroSection.config as object), dispatchEnabled: true, dispatchText: 'Performance media for every capture', dispatchDescription: 'Explore SD, microSD, CFexpress and high-speed readers.', trustLine: 'TRUSTED BY CREATORS. ENGINEERED FOR MORE.' } },
+    });
+  }
+
   // Added in a follow-up batch, once these types existed - findFirst-or-
   // create per type (rather than another count()===0 guard) so this runs
   // safely against a DB that already has the first 11 rows seeded.
@@ -410,16 +423,25 @@ async function main() {
     contentBlocks: 'We are an independent UK retailer based in Manchester, building and shipping PCs and components since day one.\n\nOur warehouse and workshop are open Monday to Saturday, and our team tests every custom build before it ships.',
   });
 
-  const deliveryFaqCategory = await prisma.faqCategory.findFirst({ where: { name: 'Delivery & Returns' } }).then((existing) =>
-    existing ?? prisma.faqCategory.create({ data: { name: 'Delivery & Returns', sortOrder: 1 } }),
-  );
+  // Homepage FAQ section - was PC-parts placeholder content; bytevex's
+  // homepage FAQ cards now read live from this category (was previously a
+  // hardcoded array in designs/bytevex/Home.tsx), so reseed with content
+  // matching the real BYTEVEX business (only if still at the old placeholder).
+  const oldFaqCategory = await prisma.faqCategory.findFirst({ where: { name: 'Delivery & Returns' } });
+  const deliveryFaqCategory = oldFaqCategory
+    ? await prisma.faqCategory.update({ where: { id: oldFaqCategory.id }, data: { name: 'Help & Technical Inquiries' } })
+    : await prisma.faqCategory.findFirst({ where: { name: 'Help & Technical Inquiries' } }).then((existing) =>
+      existing ?? prisma.faqCategory.create({ data: { name: 'Help & Technical Inquiries', sortOrder: 1 } }),
+    );
   const faqCount = await prisma.faq.count({ where: { faqCategoryId: deliveryFaqCategory.id } });
-  if (faqCount === 0) {
+  if (faqCount === 0 || oldFaqCategory) {
+    if (oldFaqCategory) await prisma.faq.deleteMany({ where: { faqCategoryId: deliveryFaqCategory.id } });
     await prisma.faq.createMany({
       data: [
-        { faqCategoryId: deliveryFaqCategory.id, question: 'How fast is delivery?', answer: 'Orders placed before 17:00 on a working day ship the same day, with free next-day delivery on orders over £75.', sortOrder: 1 },
-        { faqCategoryId: deliveryFaqCategory.id, question: 'What is your returns policy?', answer: 'You can return most items within 30 days of delivery in their original packaging for a full refund.', sortOrder: 2 },
-        { faqCategoryId: deliveryFaqCategory.id, question: 'Do you build custom PCs?', answer: 'Yes - every custom build is assembled and stress-tested for 48 hours at our Manchester workshop before it ships.', sortOrder: 3 },
+        { faqCategoryId: deliveryFaqCategory.id, question: 'How do I verify if my camera requires UHS-II or V90?', answer: "Check your camera's manual for maximum recording bitrate. Any video mode above 400 Mbps (50 MB/s), such as 4K All-Intra or 8K, strictly mandates a V90 card. Using a V30 card will lead to recording automatically halting after 3-5 seconds.", sortOrder: 1 },
+        { faqCategoryId: deliveryFaqCategory.id, question: 'Do BYTEVEX cards carry official warranty in India?', answer: 'Yes, all BYTEVEX cards carry a 5-Year Indian Replacement Warranty. In case of any defect, we offer free doorstep reverse-pickup via BlueDart across all Indian PIN codes and express replacement within 48 hours of receipt.', sortOrder: 2 },
+        { faqCategoryId: deliveryFaqCategory.id, question: 'Can I claim GST Input Tax Credit on my order?', answer: 'Absolutely. Enter your Company Name and 15-digit GSTIN at checkout. You will immediately receive a tax-compliant GST e-invoice showing 18% IGST or CGST+SGST break-up for seamless input credit reconciliation.', sortOrder: 3 },
+        { faqCategoryId: deliveryFaqCategory.id, question: 'What if the card is incompatible with my device?', answer: 'We provide a 7-day hassle-free compatibility exchange guarantee. If you accidentally purchase an incompatible card for your drone or camera, our Bangalore support center will swap it for the correct spec with zero restocking fee.', sortOrder: 4 },
       ],
     });
   }

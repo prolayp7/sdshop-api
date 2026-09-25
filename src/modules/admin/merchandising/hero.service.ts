@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'; import { PrismaService } from '../../../prisma/prisma.service'; import { CreateHeroSlideDto } from './dto/create-hero-slide.dto'; import { UpdateHeroSlideDto } from './dto/update-hero-slide.dto'; import { CreateTrustBadgeDto } from './dto/create-trust-badge.dto';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'; import { PrismaService } from '../../../prisma/prisma.service'; import { CreateHeroSlideDto } from './dto/create-hero-slide.dto'; import { UpdateHeroSlideDto } from './dto/update-hero-slide.dto'; import { CreateTrustBadgeDto } from './dto/create-trust-badge.dto'; import { UpdateTrustBadgeDto } from './dto/update-trust-badge.dto';
 @Injectable()
 export class HeroService {
   constructor(private readonly prisma: PrismaService) {}
@@ -9,4 +9,6 @@ export class HeroService {
   async removeSlide(id: number) { const result = await this.prisma.heroSlide.deleteMany({ where: { id } }); if (!result.count) throw new NotFoundException('Hero slide not found'); }
   badges() { return this.prisma.heroTrustBadge.findMany({ orderBy: { sortOrder: 'asc' } }); }
   createBadge(dto: CreateTrustBadgeDto) { return this.prisma.heroTrustBadge.create({ data: dto }); }
+  async updateBadge(id: number, dto: UpdateTrustBadgeDto) { const current = await this.prisma.heroTrustBadge.findUnique({ where: { id } }); if (!current) throw new NotFoundException('Trust badge not found'); return this.prisma.heroTrustBadge.update({ where: { id }, data: dto }); }
+  async removeBadge(id: number) { const result = await this.prisma.heroTrustBadge.deleteMany({ where: { id } }); if (!result.count) throw new NotFoundException('Trust badge not found'); }
 }

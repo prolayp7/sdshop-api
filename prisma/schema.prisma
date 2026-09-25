@@ -1348,6 +1348,18 @@ model HeroSlide {
   ctaUrl            String?       @map("cta_url")
   secondaryCtaLabel String?       @map("secondary_cta_label")
   secondaryCtaUrl   String?       @map("secondary_cta_url")
+  headlineHighlight String?       @map("headline_highlight")
+  badgeLabel        String?       @map("badge_label")
+  showcaseLabel     String?       @map("showcase_label")
+  metrics           Json?
+  productName       String?       @map("product_name")
+  productSubline    String?       @map("product_subline")
+  specs             Json?
+  visualKind        String?       @map("visual_kind")
+  visualCapacity    String?       @map("visual_capacity")
+  visualRating      String?       @map("visual_rating")
+  visualCompanionKind     String? @map("visual_companion_kind")
+  visualCompanionCapacity String? @map("visual_companion_capacity")
   sortOrder         Int           @default(0) @map("sort_order")
   status            CatalogStatus @default(ACTIVE)
   startsAt          DateTime?     @map("starts_at")
