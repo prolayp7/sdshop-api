@@ -48,6 +48,11 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum CustomerDeletionRequestStatus {
+  PENDING
+  COMPLETED
+}
+
 enum AddressType {
   BILLING
   SHIPPING
@@ -88,6 +93,7 @@ model User {
   orderItemReturns OrderItemReturn[]
   giftCards        GiftCard[]
   refreshTokens    CustomerRefreshToken[]
+  deletionRequests CustomerDeletionRequest[]
 
   @@map("users")
 }
@@ -127,6 +133,19 @@ model CustomerRefreshToken {
 
   @@index([userId])
   @@map("customer_refresh_tokens")
+}
+
+model CustomerDeletionRequest {
+  id          Int                           @id @default(autoincrement())
+  userId      Int                           @map("user_id")
+  user        User                          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  status      CustomerDeletionRequestStatus @default(PENDING)
+  requestedAt DateTime                      @default(now()) @map("requested_at")
+  processedAt DateTime?                     @map("processed_at")
+
+  @@index([status, requestedAt])
+  @@index([userId, status])
+  @@map("customer_deletion_requests")
 }
 
 model AdminUser {
