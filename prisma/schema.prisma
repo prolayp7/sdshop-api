@@ -1615,6 +1615,7 @@ model MegaMenuPanel {
   menuItemId Int      @unique @map("menu_item_id")
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   sortOrder  Int      @default(0) @map("sort_order")
+  content    Json?
 
   columns MegaMenuColumn[]
 
@@ -1696,11 +1697,20 @@ model BlogPost {
   excerpt         String?
   content         String
   tags            Json?
+  steps           Json?
+  materials       Json?
+  estimatedTimeMinutes Int?  @map("estimated_time_minutes")
+  difficulty      String?
   isFeatured      Boolean       @default(false) @map("is_featured")
   status          ContentStatus @default(DRAFT)
   publishedAt     DateTime?     @map("published_at")
   metaTitle       String?       @map("meta_title")
   metaDescription String?       @map("meta_description")
+  focusKeyword    String?       @map("focus_keyword")
+  socialShareImage String?      @map("social_share_image")
+  socialShareImageAlt String?   @map("social_share_image_alt")
+  twitterCard     TwitterCardType @default(SUMMARY_LARGE_IMAGE) @map("twitter_card")
+  contentBlocks   Json?         @map("content_blocks")
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 

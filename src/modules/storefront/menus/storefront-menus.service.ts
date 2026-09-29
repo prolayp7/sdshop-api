@@ -18,6 +18,7 @@ export class StorefrontMenusService {
             href: true,
             sortOrder: true,
             category: { select: { id: true, title: true, slug: true } },
+            megaMenuPanel: { select: { content: true } },
             children: {
               where: { status: 'ACTIVE' },
               orderBy: { sortOrder: 'asc' },
@@ -27,6 +28,7 @@ export class StorefrontMenusService {
                 href: true,
                     sortOrder: true,
                 category: { select: { id: true, title: true, slug: true } },
+                megaMenuPanel: { select: { content: true } },
               },
             },
           },

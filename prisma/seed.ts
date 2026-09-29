@@ -249,12 +249,12 @@ async function main() {
     update: {},
     create: { name: 'Header', slug: 'header', location: 'HEADER' },
   });
-  const existingMemoryCardsItem = await prisma.menuItem.findFirst({
-    where: { menuId: headerMenu.id, label: 'Memory Cards' },
+  const existingShopProductsItem = await prisma.menuItem.findFirst({
+    where: { menuId: headerMenu.id, label: 'Shop Products', parentId: null },
   });
-  if (!existingMemoryCardsItem) {
+  if (!existingShopProductsItem) {
     await prisma.menuItem.create({
-      data: { menuId: headerMenu.id, label: 'Memory Cards', categoryId: memoryCards.id, sortOrder: 1 },
+      data: { menuId: headerMenu.id, label: 'Shop Products', sortOrder: 0 },
     });
   }
 

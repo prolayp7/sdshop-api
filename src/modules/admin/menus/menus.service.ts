@@ -22,12 +22,17 @@ export class MenusService {
   async removeItem(menuId: number, itemId: number) { await this.item(menuId, itemId); await this.prisma.menuItem.delete({ where: { id: itemId } }); }
   async upsertPanel(itemId: number, dto: UpsertMegaMenuPanelDto) {
     const item = await this.prisma.menuItem.findUnique({ where: { id: itemId } }); if (!item) throw new NotFoundException('Menu item not found');
-    for (const column of dto.columns) for (const link of column.links) if (!link.categoryId && !link.href) throw new BadRequestException('Each mega-menu link requires categoryId or href');
+    for (const column of dto.columns ?? []) for (const link of column.links) if (!link.categoryId && !link.href) throw new BadRequestException('Each mega-menu link requires categoryId or href');
     try { return await this.prisma.$transaction(async tx => {
       const existing = await tx.megaMenuPanel.findUnique({ where: { menuItemId: itemId } });
-      if (existing) await tx.megaMenuColumn.deleteMany({ where: { panelId: existing.id } });
-      const nested = dto.columns.map((column, index) => ({ title: column.title, sortOrder: column.sortOrder ?? index, links: { create: column.links.map((link, linkIndex) => ({ ...link, sortOrder: link.sortOrder ?? linkIndex })) } }));
-      return tx.megaMenuPanel.upsert({ where: { menuItemId: itemId }, create: { menuItemId: itemId, columns: { create: nested } }, update: { columns: { create: nested } }, include: panelInclude });
+      const columns = dto.columns?.map((column, index) => ({ title: column.title, sortOrder: column.sortOrder ?? index, links: { create: column.links.map((link, linkIndex) => ({ ...link, sortOrder: link.sortOrder ?? linkIndex })) } }));
+      if (existing && columns) await tx.megaMenuColumn.deleteMany({ where: { panelId: existing.id } });
+      return tx.megaMenuPanel.upsert({
+        where: { menuItemId: itemId },
+        create: { menuItemId: itemId, content: dto.content as Prisma.InputJsonValue | undefined, ...(columns ? { columns: { create: columns } } : {}) },
+        update: { ...(dto.content ? { content: dto.content as Prisma.InputJsonValue } : {}), ...(columns ? { columns: { create: columns } } : {}) },
+        include: panelInclude,
+      });
     }); } catch (e) { return this.mapCategory(e); }
   }
   private mapCategory(error: unknown): never { if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') throw new BadRequestException('Category not found'); throw error; }
