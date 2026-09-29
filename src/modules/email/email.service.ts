@@ -61,7 +61,7 @@ export class EmailService {
   // SMTP relay never blocks or fails checkout/admin/refund/notification flows.
   // Returns false when SMTP isn't configured (the current default state) or
   // the send itself failed - both are logged, neither is fatal to the caller.
-  async send(to: string, subject: string, html: string): Promise<boolean> {
+  async send(to: string, subject: string, html: string, attachments?: nodemailer.SendMailOptions['attachments']): Promise<boolean> {
     const cfg = await this.config();
     if (!cfg) {
       this.logger.warn(`Email not sent (SMTP not configured): "${subject}" to ${to}`);
@@ -75,7 +75,7 @@ export class EmailService {
         auth: { user: cfg.user, pass: cfg.pass },
       });
       const resolvedHtml = html.includes(LOGO_SRC_PLACEHOLDER) ? html.replace(LOGO_SRC_PLACEHOLDER, await this.logoUrl()) : html;
-      await transporter.sendMail({ from: cfg.from, to, subject, html: resolvedHtml });
+      await transporter.sendMail({ from: cfg.from, to, subject, html: resolvedHtml, ...(attachments?.length ? { attachments } : {}) });
       return true;
     } catch (error) {
       this.logger.warn(`Failed to send email "${subject}" to ${to}: ${(error as Error).message}`);

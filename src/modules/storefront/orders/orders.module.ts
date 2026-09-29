@@ -11,5 +11,6 @@ import { StorefrontCouponsModule } from '../coupons/coupons.module';
   imports: [CustomerCoreModule, CartModule, StorefrontShippingModule, StorefrontCouponsModule],
   controllers: [OrdersController],
   providers: [OrdersService, OrderExpiryService],
+  exports: [OrdersService],
 })
 export class OrdersModule {}

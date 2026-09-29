@@ -5,6 +5,7 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import { EmailService } from '../../src/modules/email/email.service';
 import { loginAsSuperAdmin } from './helpers/admin-auth';
 import { registerCustomer } from './helpers/customer-auth';
+import { createReturn, inspectReturn } from './helpers/returns';
 
 // Resilience (checkout/status-update/refund/notification all succeeding with
 // no SMTP configured) is already proven implicitly: every other e2e spec in
@@ -133,24 +134,13 @@ describe('Transactional email triggers (e2e)', () => {
     await prisma.paymentTransaction.create({
       data: { orderId: order.id, provider: 'MANUAL', providerTransactionId: `email_test_${orderUuid}`, amount: order.total, status: 'CAPTURED' },
     });
-    const returnRequest = await prisma.orderItemReturn.create({
-      data: { orderItemId: order.items[0].id, userId: order.userId!, reason: 'Not needed' },
-    });
-    await request(app.getHttpServer())
-      .patch(`/api/v1/admin/returns/${returnRequest.id}/approve`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send({})
-      .expect(200);
-    await request(app.getHttpServer())
-      .patch(`/api/v1/admin/returns/${returnRequest.id}/receive`)
-      .set('Authorization', `Bearer ${adminToken}`)
-      .expect(200);
+    const ret = await createReturn(prisma, order.id);
+    await inspectReturn(app, adminToken, ret);
 
     sendSpy.mockClear();
     await request(app.getHttpServer())
-      .post(`/api/v1/admin/returns/${returnRequest.id}/refund`)
+      .post(`/api/v1/admin/returns/${ret.returnId}/refund`)
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ refundAmount: Number(order.items[0].subtotal) })
       .expect(201);
 
     expect(sendSpy).toHaveBeenCalledTimes(1);

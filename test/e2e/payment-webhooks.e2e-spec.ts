@@ -5,6 +5,7 @@ import { createTestApp } from './setup';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { loginAsSuperAdmin } from './helpers/admin-auth';
 import { registerCustomer } from './helpers/customer-auth';
+import { EmailService } from '../../src/modules/email/email.service';
 
 function signStripePayload(secret: string, payload: string, timestamp = Math.floor(Date.now() / 1000)) {
   const signedPayload = `${timestamp}.${payload}`;
@@ -62,6 +63,8 @@ describe('Stripe webhook - configured (e2e)', () => {
   let orderId: number;
   let orderUuidValue: string;
   let attemptProviderObjectId: string;
+  let checkoutEmail: string;
+  let sendEmail: jest.SpyInstance;
 
   beforeAll(async () => {
     ({ app, prisma } = await createTestApp());
@@ -90,8 +93,8 @@ describe('Stripe webhook - configured (e2e)', () => {
     await prisma.productVariant.update({ where: { id: variantId }, data: { stockQty: 20 } });
 
     const method = await prisma.shippingMethod.findFirst({ where: { status: 'ACTIVE' } });
-    const email = `webhook-${Date.now()}@example.com`;
-    const { accessToken: customerToken } = await registerCustomer(app, { email, password: 'SuperSecret123!', firstName: 'Web', lastName: 'Hook' });
+    checkoutEmail = `webhook-${Date.now()}@example.com`;
+    const { accessToken: customerToken } = await registerCustomer(app, { email: checkoutEmail, password: 'SuperSecret123!', firstName: 'Web', lastName: 'Hook' });
 
     await request(app.getHttpServer())
       .post('/api/v1/cart/items')
@@ -113,7 +116,7 @@ describe('Stripe webhook - configured (e2e)', () => {
     const attemptRes = await request(app.getHttpServer())
       .post('/api/v1/payments/attempts')
       .set('Idempotency-Key', `webhook-test-${Date.now()}`)
-      .send({ orderUuid: orderUuidValue, email, provider: 'STRIPE' })
+      .send({ orderUuid: orderUuidValue, email: checkoutEmail, provider: 'STRIPE' })
       .expect(201);
     stripeFetch.mockRestore();
 
@@ -121,9 +124,11 @@ describe('Stripe webhook - configured (e2e)', () => {
     const attempt = await prisma.paymentAttempt.findUniqueOrThrow({ where: { uuid: attemptRes.body.data.attemptId } });
     await prisma.paymentAttempt.update({ where: { id: attempt.id }, data: { providerObjectId: attemptProviderObjectId } });
     orderId = attempt.orderId;
+    sendEmail = jest.spyOn(app.get(EmailService), 'send').mockResolvedValue(true);
   });
 
   afterAll(async () => {
+    sendEmail?.mockRestore();
     await app.close();
   });
 
@@ -153,6 +158,15 @@ describe('Stripe webhook - configured (e2e)', () => {
     const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
     expect(order.paymentStatus).toBe('PAID');
     expect(order.status).toBe('PROCESSING');
+    const invoice = await prisma.invoice.findFirst({ where: { orderId } });
+    expect(invoice).not.toBeNull();
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(sendEmail).toHaveBeenCalledWith(
+      checkoutEmail,
+      `Order confirmed - ${order.orderNumber}`,
+      expect.any(String),
+      [expect.objectContaining({ filename: `invoice-${invoice!.invoiceNumber}.pdf`, content: expect.any(Buffer), contentType: 'application/pdf' })],
+    );
 
     const attempt = await prisma.paymentAttempt.findFirst({ where: { providerObjectId: attemptProviderObjectId } });
     expect(attempt!.status).toBe('CAPTURED');
@@ -184,6 +198,7 @@ describe('Stripe webhook - configured (e2e)', () => {
     // order already PAID by the earlier success test, so applyEvent's guard
     // short-circuits regardless - this proves the replay didn't error or duplicate
     expect(transactionsAfterSecond).toBe(transactionsAfterFirst);
+    expect(sendEmail).toHaveBeenCalledTimes(1);
   });
 
   it('transitions the order to FAILED on payment_intent.payment_failed', async () => {

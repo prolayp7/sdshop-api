@@ -8,6 +8,7 @@ import { AuditService } from '../../common/audit/audit.service';
 import { PaymentStateService } from './payment-state.service';
 import { PaypalGatewayService } from './paypal-gateway.service';
 import { StripeGatewayService } from './stripe-gateway.service';
+import { OrdersService } from '../storefront/orders/orders.service';
 
 const payableOrderStatuses = ['PENDING', 'AWAITING_PAYMENT', 'FAILED'] as const;
 type StoredIntegrationFlags = { enabled?: boolean };
@@ -32,6 +33,7 @@ export class PaymentAttemptsService {
     private readonly paypalGateway: PaypalGatewayService,
     private readonly stripeGateway: StripeGatewayService,
     private readonly audit: AuditService,
+    private readonly orders: OrdersService,
   ) {}
 
   async create(dto: CreatePaymentAttemptDto, idempotencyKey: string) {
@@ -152,6 +154,7 @@ export class PaymentAttemptsService {
       outcome.captured ? `Payment captured via ${label}` : `Payment failed or was declined via ${label}`,
     );
 
+    let paidOrderId: number | null = null;
     await this.prisma.$transaction(async (tx) => {
       const attempt = await tx.paymentAttempt.findUnique({ where: { id: attemptId } });
       if (!attempt) return;
@@ -182,6 +185,7 @@ export class PaymentAttemptsService {
         await tx.orderStatusHistory.create({
           data: { orderId: order.id, fromStatus: order.status, toStatus: 'PROCESSING', note: `Payment captured via ${label}` },
         });
+        paidOrderId = order.id;
       } else {
         await tx.order.update({ where: { id: order.id }, data: { paymentStatus: 'FAILED', status: 'FAILED' } });
         await tx.orderStatusHistory.create({
@@ -190,6 +194,7 @@ export class PaymentAttemptsService {
       }
     });
     await this.audit.log({ action: outcome.captured ? 'payment.captured' : 'payment.failed', entity: 'PaymentAttempt', entityId: attemptId, meta: { provider: current.provider } });
+    if (paidOrderId !== null) await this.orders.sendPaidOrderConfirmation(paidOrderId);
   }
 
   /** Looks up a PaymentAttempt by the provider's own order/intent id - used

@@ -1,6 +1,6 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { promises as fs } from 'fs';
-import { basename, join } from 'path';
+import { relative, resolve, sep } from 'path';
 import { randomBytes } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -10,7 +10,7 @@ import { CartService } from '../cart/cart.service';
 import { StorefrontShippingService } from '../shipping/storefront-shipping.service';
 import { StorefrontCouponsService } from '../coupons/coupons.service';
 import { CheckoutDto } from './dto/checkout.dto';
-import { mediaUploadDirectory } from '../../../bootstrap';
+import { mediaBuckets, mediaUploadDirectory } from '../../../bootstrap';
 import { buildInvoicePdf } from './invoice-pdf';
 import { EmailService } from '../../email/email.service';
 import { orderConfirmationEmail, orderCancelledEmail } from '../../email/email-templates';
@@ -21,7 +21,7 @@ const CANCELLABLE_STATUSES = ['PENDING', 'AWAITING_PAYMENT', 'PROCESSING'];
 
 const orderDetailInclude = {
   invoice: true,
-  items: { include: { returns: { select: { id: true, returnStatus: true } } } },
+  items: { include: { returnItems: { select: { quantity: true, approvedQuantity: true, receivedQuantity: true, acceptedQuantity: true, inspectionResult: true, returnRequest: { select: { returnNumber: true, status: true } } } } } },
   shippingMethod: { select: { id: true, title: true, carrier: true } },
   shipments: { include: { events: { orderBy: { occurredAt: 'desc' as const } } } },
   statusHistory: { orderBy: { createdAt: 'asc' as const } },
@@ -33,6 +33,8 @@ function round2(value: number): number {
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly cartService: CartService,
@@ -70,11 +72,9 @@ export class OrdersService {
     if (!activeItems.length) throw new BadRequestException('Cart is empty');
 
     let email = dto.email;
-    let customerFirstName = 'there';
     if (customerId) {
-      const customer = await this.prisma.user.findUnique({ where: { id: customerId } });
+      const customer = await this.prisma.user.findUnique({ where: { id: customerId }, select: { email: true } });
       email = email ?? customer!.email;
-      customerFirstName = customer!.firstName;
     }
     if (!email) throw new BadRequestException('Email is required for guest checkout');
 
@@ -225,21 +225,35 @@ export class OrdersService {
     });
     if (!created) return this.findByUuid((await this.prisma.order.findUniqueOrThrow({ where: { checkoutKey: idempotencyKey } })).uuid);
 
-    const confirmation = orderConfirmationEmail({
-      orderNumber: created.orderNumber,
-      orderUuid: created.uuid,
-      customerFirstName,
-      placedAt: created.placedAt,
-      items: lines.map((l) => ({ name: l.titleSnapshot, meta: `${l.variantTitleSnapshot} · Qty ${l.quantity}`, price: l.subtotal })),
-      subtotal,
-      shipping: shippingCharge,
-      vat: vatTotal,
-      total,
-      address: { fullName: shipping.fullName, line1: shipping.line1, line2: shipping.line2, city: shipping.city, postcode: shipping.postcode },
-    });
-    void this.emailService.send(email, confirmation.subject, confirmation.html);
-
     return this.findByUuid(created.uuid);
+  }
+
+  async sendPaidOrderConfirmation(orderId: number): Promise<void> {
+    try {
+      const order = await this.prisma.order.findUnique({ where: { id: orderId }, include: orderDetailInclude });
+      if (!order || order.paymentStatus !== 'PAID' || !order.invoice) return;
+
+      const customer = order.userId
+        ? await this.prisma.user.findUnique({ where: { id: order.userId }, select: { firstName: true } })
+        : null;
+      const firstName = customer?.firstName || order.shippingFullName.trim().split(/\s+/)[0] || 'there';
+      const confirmation = orderConfirmationEmail({
+        orderNumber: order.orderNumber,
+        orderUuid: order.uuid,
+        customerFirstName: firstName,
+        placedAt: order.placedAt,
+        items: order.items.map((item) => ({ name: item.titleSnapshot, meta: `${item.variantTitleSnapshot} · Qty ${item.quantity}`, price: Number(item.subtotal) })),
+        subtotal: Number(order.subtotal),
+        shipping: Number(order.shippingCharge),
+        vat: Number(order.vatTotal),
+        total: Number(order.total),
+        address: { fullName: order.shippingFullName, line1: order.shippingLine1, line2: order.shippingLine2, city: order.shippingCity, postcode: order.shippingPostcode },
+      });
+      const invoice = await this.renderInvoice(order);
+      await this.emailService.send(order.email, confirmation.subject, confirmation.html, [{ filename: invoice.filename, content: invoice.buffer, contentType: 'application/pdf' }]);
+    } catch (error) {
+      this.logger.warn(`Paid order confirmation could not be prepared for order ${orderId}: ${(error as Error).message}`);
+    }
   }
 
   async list(customerId: number, query: PaginationQueryDto) {
@@ -308,7 +322,14 @@ export class OrdersService {
     let logo: Buffer | null = null;
     if (s.logo) {
       // Uploaded logos are usually WebP, which PDFs can't embed - convert to PNG.
-      try { logo = await sharp(join(mediaUploadDirectory, basename(s.logo))).png().toBuffer(); } catch { /* missing/unreadable - text brand only */ }
+      const storedPath = s.logo.startsWith('/uploads/') ? s.logo.slice('/uploads/'.length) : s.logo;
+      const candidates = storedPath.includes('/') ? [storedPath] : [`${mediaBuckets.logos}/${storedPath}`, storedPath];
+      for (const candidate of candidates) {
+        const filePath = resolve(mediaUploadDirectory, candidate);
+        const relativePath = relative(mediaUploadDirectory, filePath);
+        if (relativePath === '..' || relativePath.startsWith(`..${sep}`)) continue;
+        try { logo = await sharp(filePath).png().toBuffer(); break; } catch { /* missing/unreadable - try the next supported location */ }
+      }
     }
     const num = (v: unknown) => Number(v ?? 0);
     const lines = order.items.map((item) => {
