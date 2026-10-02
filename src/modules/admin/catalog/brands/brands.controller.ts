@@ -18,6 +18,8 @@ import { ListBrandsQueryDto } from './dto/list-brands-query.dto';
 import { BrandsService } from './brands.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
+import { onBrand } from '../../../revalidation/resolvers';
+import { Revalidates } from '../../../revalidation/revalidates.decorator';
 
 @Controller('admin/brands')
 @UseGuards(AdminAuthGuard, PermissionsGuard)
@@ -36,17 +38,20 @@ export class BrandsController {
   }
 
   @Post()
+  @Revalidates(onBrand)
   @HttpCode(201)
   create(@Body() dto: CreateBrandDto) {
     return this.brandsService.create(dto);
   }
 
   @Patch(':id')
+  @Revalidates(onBrand)
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateBrandDto) {
     return this.brandsService.update(id, dto);
   }
 
   @Delete(':id')
+  @Revalidates(onBrand)
   @HttpCode(204)
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.brandsService.remove(id);

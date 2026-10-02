@@ -1067,9 +1067,11 @@ model ReturnEvent {
 }
 
 model NewsletterSubscriber {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
+  id              Int       @id @default(autoincrement())
+  email           String    @unique
+  unsubscribeToken String   @unique @default(uuid()) @map("unsubscribe_token")
+  unsubscribedAt  DateTime? @map("unsubscribed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   @@map("newsletter_subscribers")
 }

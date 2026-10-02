@@ -5,7 +5,7 @@ import { buildPaginationMeta, paginationSkipTake } from '../../../common/paginat
 import { dateRange } from '../../../common/date-range';
 import { AuditService } from '../../../common/audit/audit.service';
 import { EmailService } from '../../email/email.service';
-import { notificationEmail } from '../../email/email-templates';
+import { notificationEmail, returnApprovedEmail, returnReceivedEmail, returnRejectedEmail } from '../../email/email-templates';
 import { ReturnImageStorage } from '../../returns/return-image.storage';
 import { heldQuantity, itemRefund, round2, unitsRefund } from '../../returns/return-rules';
 import { ReturnActor, ReturnsCoreService } from '../../returns/returns-core.service';
@@ -187,7 +187,8 @@ export class AdminReturnsService {
       await this.core.setStatus(tx, id, 'RETURN_APPROVED', { action: 'return.approved', note: dto.note?.trim() || null, actor });
     });
     await this.audit.log({ action: 'return.approved', entity: 'ReturnRequest', entityId: id, actor: { type: 'ADMIN', id: adminId }, meta: { quantities: Object.fromEntries(quantities) } });
-    this.notify(request, 'Your return has been approved', 'Your return request has been approved. Pickup will be scheduled shortly, and we will email you the collection details.');
+    const email = returnApprovedEmail({ orderNumber: request.order.orderNumber, returnNumber: request.returnNumber });
+    void this.emailService.send(request.order.email, email.subject, email.html);
     return this.detail(id);
   }
 
@@ -197,7 +198,8 @@ export class AdminReturnsService {
     const reason = dto.reason.trim();
     await this.core.setStatus(this.prisma, id, 'RETURN_REJECTED', { action: 'return.rejected', note: reason, actor: { type: 'ADMIN', id: adminId }, data: { rejectionReason: reason } });
     await this.audit.log({ action: 'return.rejected', entity: 'ReturnRequest', entityId: id, actor: { type: 'ADMIN', id: adminId }, meta: { reason } });
-    this.notify(request, 'Your return request was not approved', `We could not accept your return request.\n\nReason: ${reason}\n\nIf you have questions, just reply to this email.`);
+    const email = returnRejectedEmail({ orderNumber: request.order.orderNumber, returnNumber: request.returnNumber, reason });
+    void this.emailService.send(request.order.email, email.subject, email.html);
     return this.detail(id);
   }
 
@@ -234,7 +236,8 @@ export class AdminReturnsService {
       for (const item of request.items) await tx.returnItem.update({ where: { id: item.id }, data: { receivedQuantity: quantities.get(item.id)! } });
       await this.core.setStatus(tx, id, 'RETURN_RECEIVED', { action: 'return.received', note, actor: { type: 'ADMIN', id: adminId } });
     });
-    this.notify(request, 'We have received your return', 'We have received your returned items. They are now being inspected, and we will let you know the outcome.');
+    const email = returnReceivedEmail({ orderNumber: request.order.orderNumber, returnNumber: request.returnNumber });
+    void this.emailService.send(request.order.email, email.subject, email.html);
     return this.detail(id);
   }
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UK Shop — 6-Day Tracker</title>
+<title>SDShop — Requirements &amp; Delivery Tracker</title>
 <style>
   :root {
     --bg: #f4f6f9; --surface: #ffffff; --ink: #101827; --ink-2: #4b5565; --ink-3: #6b7585;
@@ -61,6 +61,22 @@
   .risk { background: var(--danger-tint); border: 1px solid #f3c6cd; color: #9f1c1c; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; }
   .risk b { display: block; margin-bottom: 3px; }
 
+  .audit { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin: 0 0 22px; overflow: hidden; }
+  .audit-head { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+  .audit-head h2 { margin: 0; font-size: 17px; }
+  .audit-head p { margin: 5px 0 0; color: var(--ink-3); font-size: 12px; }
+  .audit-rows { padding: 0 18px; }
+  .audit-row { display: grid; grid-template-columns: minmax(170px, 230px) minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 2px; border-bottom: 1px dashed var(--border); }
+  .audit-row:last-child { border-bottom: 0; }
+  .audit-row h3 { margin: 1px 0 0; font-size: 13px; }
+  .audit-row p { margin: 0; color: var(--ink-2); font-size: 12px; }
+  .audit-status { white-space: nowrap; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 8px; border-radius: 999px; }
+  .audit-implemented { color: #12703a; background: var(--good-tint); }
+  .audit-partial { color: var(--warn); background: var(--warn-tint); }
+  .audit-missing { color: #9f1c1c; background: var(--danger-tint); }
+  .audit-note { margin: 0 18px 16px; padding: 10px 12px; background: var(--bg); border-radius: 8px; color: var(--ink-2); font-size: 12px; }
+  @media(max-width:700px) { .audit-row { grid-template-columns: minmax(0,1fr) auto; gap: 6px 10px; } .audit-row p { grid-column: 1 / -1; grid-row: 2; } .audit-status { grid-column: 2; grid-row: 1; } }
+
   .reset { font-size: 12px; color: var(--ink-3); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; float: right; }
   .reset:hover { background: var(--bg); }
   footer { text-align: center; color: var(--ink-3); font-size: 12px; padding: 20px; }
@@ -68,13 +84,34 @@
 </head>
 <body>
 <header>
-  <h1>UK Shop Ecommerce — 6-Day Completion Tracker</h1>
-  <p>Started 26 Aug 2026 · Plan window 1 Sep – 6 Sep 2026 · API / Admin Panel / Frontend</p>
+  <h1>SDShop — Requirements &amp; Delivery Tracker</h1>
+  <p>Requirement audit: 25 Oct 2026 · API: sdshop-api · Admin: sdshop-admin · Storefront: sdshop</p>
 </header>
 
 <div class="wrap">
 
   <div class="summary" id="summary"></div>
+
+  <section class="audit" aria-labelledby="audit-title">
+    <div class="audit-head"><h2 id="audit-title">Requirement Audit</h2><p>Checked against <code>sdshop-api/docs/requirement.md</code> and the current API, admin, and storefront code.</p></div>
+    <div class="audit-rows">
+      <article class="audit-row"><h3>Catalogue &amp; categories</h3><p>Product listing, category tree, subcategories, brands, variants, stock and active catalogue search are connected across the API and storefront.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Search &amp; filters</h3><p>Text search and dynamic facets cover seeded storage capacity, speed class and card type, plus brand, price, category and availability.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Product detail &amp; compare</h3><p>Gallery, variants, specifications, stock, reviews/ratings and product comparison are present in the customer UI and API.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Cart &amp; purchase options</h3><p>Add to cart, Buy Now, authenticated wishlist and coupon validation are wired to the storefront API.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Checkout &amp; customer account</h3><p>Guest checkout, login, saved addresses, order history, cancellation, return/refund requests and account order details are implemented.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Guest order tracking</h3><p>A public order-number/email lookup page now uses the existing guest tracking API; the storefront footer links to it.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Payments &amp; delivery</h3><p>Stripe and PayPal are the only accepted checkout providers, and checkout displays the API-calculated delivery date range. Shipping-rate quotes are connected. Live gateway credentials and provider webhooks still need deployment verification.</p><span class="audit-status audit-partial">Partial</span></article>
+      <article class="audit-row"><h3>Cancellation, returns &amp; refunds</h3><p>Customer cancellation and the admin return, inspection and provider-confirmed refund workflow are implemented.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Sales invoice / receipt</h3><p>A sequenced invoice is created after payment; its PDF is attached to order confirmation and downloadable by customers.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Credit notes</h3><p>Provider-confirmed full and partial refunds now generate a PDF credit note and attach it to the refund email. The stable credit-note number is derived from the refund record ID.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Transactional email coverage</h3><p>Payment failures and return approval, rejection and receipt have dedicated templates; refund emails distinguish full and partial refunds and include the credit-note PDF. SMTP delivery remains best-effort and requires live configuration.</p><span class="audit-status audit-implemented">Implemented</span></article>
+      <article class="audit-row"><h3>Newsletter campaigns &amp; automated alerts</h3><p>Admin campaign sending and tokenized unsubscribe are implemented. Paid-order and Stripe dispute alerts send to OPERATIONS_EMAIL when configured. Wishlist back-in-stock/price-drop and low-stock alerts remain outstanding.</p><span class="audit-status audit-partial">Partial</span></article>
+      <article class="audit-row"><h3>Production catalogue/content</h3><p>Seed products and company/content claims are generated placeholders. The project brief says they are not real client data; replace and verify them before publishing.</p><span class="audit-status audit-partial">Release blocker</span></article>
+    </div>
+    <p class="audit-note"><b>Admin scope:</b> Catalog, stock, orders, shipping, returns/refunds, reviews, promotions, CMS, media, reports, RBAC, newsletter subscriber list and campaign form are present. API unit suite: 9 suites / 40 tests passed; API, admin and storefront production builds passed. Apply the new newsletter-unsubscribe migration before deploying the newsletter changes.</p>
+    <p class="audit-note"><b>Remaining release work:</b> Configure Stripe/PayPal credentials and webhooks plus OPERATIONS_EMAIL; replace placeholder catalogue/company content; implement wishlist price/restock and low-stock alerts. Update requirement.md sections that still describe invoice PDFs or credit notes as missing.</p>
+  </section>
 
   <button class="reset" onclick="if(confirm('Reset all checked progress?')){localStorage.removeItem('ukshop-tracker-v1');location.reload();}">Reset progress</button>
   <div style="clear:both"></div>

@@ -5,6 +5,8 @@ import { RequirePermissions } from '../../../common/admin/permissions.decorator'
 import { ReorderHomepageSectionsDto } from './dto/reorder-homepage-sections.dto';
 import { UpdateHomepageSectionDto } from './dto/update-homepage-section.dto';
 import { HomepageSectionsService } from './homepage-sections.service';
+import { Revalidates } from '../../revalidation/revalidates.decorator';
+import { onHomepage } from '../../revalidation/resolvers';
 
 @Controller('admin/homepage-sections')
 @UseGuards(AdminAuthGuard, PermissionsGuard)
@@ -17,12 +19,12 @@ export class HomepageSectionsController {
     return this.service.list();
   }
 
-  @Patch(':id')
+  @Revalidates(onHomepage) @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateHomepageSectionDto) {
     return this.service.update(id, dto);
   }
 
-  @Post('reorder')
+  @Revalidates(onHomepage) @Post('reorder')
   reorder(@Body() dto: ReorderHomepageSectionsDto) {
     return this.service.reorder(dto);
   }

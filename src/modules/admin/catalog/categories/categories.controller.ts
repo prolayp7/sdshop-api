@@ -18,6 +18,8 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ListCategoriesQueryDto } from './dto/list-categories-query.dto';
+import { onCategory } from '../../../revalidation/resolvers';
+import { Revalidates } from '../../../revalidation/revalidates.decorator';
 
 @Controller('admin/categories')
 @UseGuards(AdminAuthGuard, PermissionsGuard)
@@ -36,17 +38,20 @@ export class CategoriesController {
   }
 
   @Post()
+  @Revalidates(onCategory)
   @HttpCode(201)
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);
   }
 
   @Patch(':id')
+  @Revalidates(onCategory)
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCategoryDto) {
     return this.categoriesService.update(id, dto);
   }
 
   @Delete(':id')
+  @Revalidates(onCategory)
   @HttpCode(204)
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.categoriesService.remove(id);

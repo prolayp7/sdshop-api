@@ -29,9 +29,9 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function shell(title: string, preheader: string, bodyRows: string, footerVariant: 'transactional' | 'marketing' = 'transactional'): string {
+function shell(title: string, preheader: string, bodyRows: string, footerVariant: 'transactional' | 'marketing' = 'transactional', unsubscribeUrl?: string): string {
   const unsub = footerVariant === 'marketing'
-    ? `<a href="${STOREFRONT_URL}/account?tab=details" style="color:${C.footInk};text-decoration:underline;">Unsubscribe</a>`
+    ? `<a href="${unsubscribeUrl ?? `${STOREFRONT_URL}/account?tab=details`}" style="color:${C.footInk};text-decoration:underline;">Unsubscribe</a>`
     : `<a href="${STOREFRONT_URL}/account?tab=details" style="color:${C.footInk};text-decoration:underline;">Manage email preferences</a>`;
 
   return `<!doctype html>
@@ -253,6 +253,17 @@ export function orderCancelledEmail(params: { orderNumber: string }) {
   return { subject: `Order cancelled - ${params.orderNumber}`, html: shell(`Order cancelled - ${params.orderNumber}`, `Order ${params.orderNumber} has been cancelled.`, body) };
 }
 
+export function paymentFailedEmail(params: { orderNumber: string }) {
+  let body = contentOpen();
+  body += badge('Payment not completed', C.amberSoft, C.amberDark);
+  body += h1('We could not complete your payment');
+  body += p(`Payment for order <b>${esc(params.orderNumber)}</b> was declined or could not be confirmed. Your order has not been paid.`);
+  body += p('You can return to checkout and try another payment method, or contact us if you need help.', { size: 13.5 });
+  body += button('Return to checkout', `${STOREFRONT_URL}/checkout`);
+  body += contentClose();
+  return { subject: `Payment failed - ${params.orderNumber}`, html: shell(`Payment failed - ${params.orderNumber}`, `Payment for order ${params.orderNumber} could not be completed.`, body) };
+}
+
 export function returnRequestedEmail(params: { orderNumber: string; itemTitle: string; reason: string }) {
   let body = contentOpen();
   body += badge('Return requested', C.amberSoft, C.amberDark);
@@ -265,14 +276,42 @@ export function returnRequestedEmail(params: { orderNumber: string; itemTitle: s
   return { subject: `Return requested - ${params.orderNumber}`, html: shell(`Return request received - ${params.orderNumber}`, `We're reviewing your return request for order ${params.orderNumber}.`, body) };
 }
 
-export function orderRefundedEmail(params: { orderNumber: string; refundAmount: string }) {
+export function returnApprovedEmail(params: { orderNumber: string; returnNumber: string }) {
   let body = contentOpen();
-  body += badge('Refund processed', C.greenSoft, C.green);
-  body += h1('Your refund is on its way');
-  body += p(`We&rsquo;ve processed a refund for order <b>${esc(params.orderNumber)}</b>. It can take 3&ndash;5 business days to reach your original payment method.`);
-  body += factRow([['Refund amount', money(Number(params.refundAmount))], ['Order number', esc(params.orderNumber)]]);
+  body += badge('Return approved', C.greenSoft, C.green);
+  body += h1('Your return has been approved');
+  body += p(`Return <b>${esc(params.returnNumber)}</b> for order <b>${esc(params.orderNumber)}</b> has been approved. We&rsquo;ll email you with collection details shortly.`);
   body += contentClose();
-  return { subject: `Refund processed - ${params.orderNumber}`, html: shell(`Refund processed - ${params.orderNumber}`, `A refund has been processed for order ${params.orderNumber}.`, body) };
+  return { subject: `Return approved - ${params.orderNumber}`, html: shell(`Return approved - ${params.orderNumber}`, `Your return ${params.returnNumber} has been approved.`, body) };
+}
+
+export function returnRejectedEmail(params: { orderNumber: string; returnNumber: string; reason: string }) {
+  let body = contentOpen();
+  body += badge('Return not approved', C.amberSoft, C.amberDark);
+  body += h1('Your return request was not approved');
+  body += p(`We could not approve return <b>${esc(params.returnNumber)}</b> for order <b>${esc(params.orderNumber)}</b>.`);
+  body += p(`Reason: ${esc(params.reason)}`, { size: 13.5 });
+  body += contentClose();
+  return { subject: `Return not approved - ${params.orderNumber}`, html: shell(`Return not approved - ${params.orderNumber}`, `We could not approve your return request.`, body) };
+}
+
+export function returnReceivedEmail(params: { orderNumber: string; returnNumber: string }) {
+  let body = contentOpen();
+  body += badge('Return received', C.blueSoft, C.blueDark);
+  body += h1('We have received your return');
+  body += p(`The items for return <b>${esc(params.returnNumber)}</b> on order <b>${esc(params.orderNumber)}</b> have arrived and are being inspected. We&rsquo;ll email you when the inspection is complete.`);
+  body += contentClose();
+  return { subject: `Return received - ${params.orderNumber}`, html: shell(`Return received - ${params.orderNumber}`, `We have received your return ${params.returnNumber}.`, body) };
+}
+
+export function orderRefundedEmail(params: { orderNumber: string; refundAmount: string; refundType: 'PARTIAL' | 'FULL' }) {
+  let body = contentOpen();
+  body += badge(params.refundType === 'FULL' ? 'Full refund processed' : 'Partial refund processed', C.greenSoft, C.green);
+  body += h1(params.refundType === 'FULL' ? 'Your full refund is on its way' : 'Your partial refund is on its way');
+  body += p(`We&rsquo;ve processed a ${params.refundType.toLowerCase()} refund for order <b>${esc(params.orderNumber)}</b>. It can take 3&ndash;5 business days to reach your original payment method.`);
+  body += factRow([['Refund amount', money(Number(params.refundAmount))], ['Order number', esc(params.orderNumber)], ['Refund type', params.refundType === 'FULL' ? 'Full refund' : 'Partial refund']]);
+  body += contentClose();
+  return { subject: `${params.refundType === 'FULL' ? 'Full' : 'Partial'} refund processed - ${params.orderNumber}`, html: shell(`Refund processed - ${params.orderNumber}`, `A refund has been processed for order ${params.orderNumber}.`, body) };
 }
 
 /* ------------------------------------------------------------------------ */
@@ -352,10 +391,28 @@ export function newsletterSubscribedEmail() {
   return { subject: "You're on the list", html: shell("You're on the list", 'Thanks for subscribing to deals & restock alerts.', body, 'marketing') };
 }
 
+export function newsletterCampaignEmail(params: { subject: string; message: string; unsubscribeToken: string }) {
+  let body = contentOpen();
+  body += h1(esc(params.subject));
+  body += p(esc(params.message).replace(/\r?\n/g, '<br>'));
+  body += contentClose();
+  const unsubscribeUrl = `${STOREFRONT_URL}/newsletter/unsubscribe?token=${encodeURIComponent(params.unsubscribeToken)}`;
+  return { subject: params.subject, html: shell(params.subject, params.subject, body, 'marketing', unsubscribeUrl) };
+}
+
 export function notificationEmail(params: { title: string; message: string }) {
   let body = contentOpen();
   body += h1(esc(params.title));
   body += p(esc(params.message));
   body += contentClose();
   return { subject: params.title, html: shell(params.title, params.message, body) };
+}
+
+export function operationsAlertEmail(params: { title: string; message: string }) {
+  let body = contentOpen();
+  body += badge('Operations alert', C.blueSoft, C.blueDark);
+  body += h1(esc(params.title));
+  body += p(esc(params.message).replace(/\r?\n/g, '<br>'));
+  body += contentClose();
+  return { subject: params.title, html: shell(params.title, params.title, body) };
 }

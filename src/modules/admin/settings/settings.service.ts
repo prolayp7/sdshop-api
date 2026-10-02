@@ -8,7 +8,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { UpsertSettingDto } from './dto/upsert-setting.dto';
 import { SaveIntegrationDto } from './dto/integration-settings.dto';
 
-const scopes = ['payment.paypal', 'payment.2checkout', 'payment.stripe', 'payment.skrill', 'delivery.fedex', 'delivery.evri', 'email.smtp'] as const;
+const scopes = ['payment.paypal', 'payment.stripe', 'payment.skrill', 'delivery.fedex', 'delivery.evri', 'email.smtp'] as const;
 export type IntegrationScope = typeof scopes[number];
 type StoredIntegration = { encrypted: string; iv: string; tag: string; mode: 'SANDBOX' | 'LIVE'; enabled?: boolean; updatedAt: string };
 

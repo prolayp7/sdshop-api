@@ -7,6 +7,8 @@ import { RequirePermissions } from '../../../common/admin/permissions.decorator'
 import { UpsertSettingDto } from './dto/upsert-setting.dto';
 import { SettingsService } from './settings.service';
 import { SaveIntegrationDto, UnlockIntegrationDto } from './dto/integration-settings.dto';
+import { Revalidates } from '../../revalidation/revalidates.decorator';
+import { onSettings } from '../../revalidation/resolvers';
 
 @Controller('admin/settings')
 @UseGuards(AdminAuthGuard, PermissionsGuard)
@@ -37,7 +39,7 @@ export class SettingsController {
     return this.service.saveIntegration(admin.id, scope, token, dto);
   }
 
-  @Put(':key')
+  @Revalidates(onSettings) @Put(':key')
   upsert(@Param('key') key: string, @Body() dto: UpsertSettingDto) {
     return this.service.upsert(key, dto);
   }

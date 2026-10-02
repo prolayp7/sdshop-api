@@ -1,9 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { AdminAuthGuard } from '../../../common/admin/admin-auth.guard';
 import { PermissionsGuard } from '../../../common/admin/permissions.guard';
 import { RequirePermissions } from '../../../common/admin/permissions.decorator';
 import { AdminNewsletterService } from './newsletter.service';
 import { ListSubscribersQueryDto } from './dto/list-subscribers-query.dto';
+import { SendNewsletterCampaignDto } from './dto/send-newsletter-campaign.dto';
 
 @Controller('admin/newsletter-subscribers')
 @UseGuards(AdminAuthGuard, PermissionsGuard)
@@ -14,5 +15,10 @@ export class AdminNewsletterController {
   @Get()
   list(@Query() query: ListSubscribersQueryDto) {
     return this.service.list(query);
+  }
+
+  @Post('campaign')
+  sendCampaign(@Body() dto: SendNewsletterCampaignDto) {
+    return this.service.sendCampaign(dto);
   }
 }

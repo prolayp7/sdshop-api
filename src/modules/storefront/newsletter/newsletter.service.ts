@@ -15,12 +15,20 @@ export class NewsletterService {
     await this.prisma.newsletterSubscriber.upsert({
       where: { email },
       create: { email },
-      update: {},
+      update: { unsubscribedAt: null },
     });
-    if (!existing) {
+    if (!existing || existing.unsubscribedAt) {
       const message = newsletterSubscribedEmail();
       void this.emailService.send(email, message.subject, message.html);
     }
     return { subscribed: true };
+  }
+
+  async unsubscribe(token: string) {
+    const result = await this.prisma.newsletterSubscriber.updateMany({
+      where: { unsubscribeToken: token, unsubscribedAt: null },
+      data: { unsubscribedAt: new Date() },
+    });
+    return { unsubscribed: result.count > 0 };
   }
 }

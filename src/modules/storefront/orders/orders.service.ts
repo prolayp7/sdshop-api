@@ -13,7 +13,9 @@ import { CheckoutDto } from './dto/checkout.dto';
 import { mediaBuckets, mediaUploadDirectory } from '../../../bootstrap';
 import { buildInvoicePdf } from './invoice-pdf';
 import { EmailService } from '../../email/email.service';
-import { orderConfirmationEmail, orderCancelledEmail } from '../../email/email-templates';
+import { orderConfirmationEmail, orderCancelledEmail, paymentFailedEmail, operationsAlertEmail } from '../../email/email-templates';
+import { RevalidationService } from '../../revalidation/revalidation.service';
+import { productTarget } from '../../revalidation/targets';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sharp = require('sharp');
@@ -41,7 +43,14 @@ export class OrdersService {
     private readonly shippingService: StorefrontShippingService,
     private readonly couponsService: StorefrontCouponsService,
     private readonly emailService: EmailService,
+    private readonly revalidation: RevalidationService,
   ) {}
+
+  private revalidateStock(productIds: number[], context: string) {
+    void productTarget(this.prisma, productIds)
+      .then((target) => this.revalidation.revalidate(target, context))
+      .catch((error) => this.logger.warn(`Stock cache invalidation failed after ${context}: ${(error as Error).message}`));
+  }
 
   private async generateOrderNumber(): Promise<string> {
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -225,6 +234,7 @@ export class OrdersService {
     });
     if (!created) return this.findByUuid((await this.prisma.order.findUniqueOrThrow({ where: { checkoutKey: idempotencyKey } })).uuid);
 
+    this.revalidateStock(lines.map((line) => line.productId), 'OrdersService.checkout');
     return this.findByUuid(created.uuid);
   }
 
@@ -251,9 +261,20 @@ export class OrdersService {
       });
       const invoice = await this.renderInvoice(order);
       await this.emailService.send(order.email, confirmation.subject, confirmation.html, [{ filename: invoice.filename, content: invoice.buffer, contentType: 'application/pdf' }]);
+      if (process.env.OPERATIONS_EMAIL) {
+        const alert = operationsAlertEmail({ title: `New paid order ${order.orderNumber}`, message: `Customer: ${order.email}\nTotal: ${Number(order.total).toFixed(2)} ${order.invoice.currency}\nPlaced: ${order.placedAt.toISOString()}` });
+        void this.emailService.send(process.env.OPERATIONS_EMAIL, alert.subject, alert.html);
+      }
     } catch (error) {
       this.logger.warn(`Paid order confirmation could not be prepared for order ${orderId}: ${(error as Error).message}`);
     }
+  }
+
+  async sendPaymentFailureNotification(orderId: number): Promise<void> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, select: { orderNumber: true, email: true } });
+    if (!order) return;
+    const email = paymentFailedEmail({ orderNumber: order.orderNumber });
+    void this.emailService.send(order.email, email.subject, email.html);
   }
 
   async list(customerId: number, query: PaginationQueryDto) {
@@ -376,6 +397,7 @@ export class OrdersService {
 
     const email = orderCancelledEmail({ orderNumber: updated.orderNumber });
     void this.emailService.send(updated.email, email.subject, email.html);
+    this.revalidateStock(order.items.map((item) => item.productId), 'OrdersService.cancel');
 
     return updated;
   }

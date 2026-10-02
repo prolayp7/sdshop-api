@@ -1,0 +1,18 @@
+export const CacheTags = {
+  homepage: 'homepage',
+  settings: 'settings',
+  menus: 'menus',
+  categories: 'categories',
+  category: (id: number) => `category:${id}`,
+  categorySlug: (slug: string) => `category-slug:${slug}`,
+  products: 'products',
+  attributes: 'attributes',
+  product: (id: number) => `product:${id}`,
+  productSlug: (slug: string) => `product-slug:${slug}`,
+  brands: 'brands',
+  brand: (id: number) => `brand:${id}`,
+  brandSlug: (slug: string) => `brand-slug:${slug}`,
+  cmsPageSlug: (slug: string) => `cms-page-slug:${slug}`,
+  faqs: 'faqs',
+  testimonials: 'testimonials',
+} as const;

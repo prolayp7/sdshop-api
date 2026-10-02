@@ -6,6 +6,8 @@ import { SettingsService } from '../admin/settings/settings.service';
 import { PaymentAttemptsService } from './payment-attempts.service';
 import { PaypalGatewayService } from './paypal-gateway.service';
 import { RefundSettlementService, refundOutcome } from '../returns/refund-settlement.service';
+import { EmailService } from '../email/email.service';
+import { operationsAlertEmail } from '../email/email-templates';
 
 const SIGNATURE_TOLERANCE_SECONDS = 300;
 
@@ -19,6 +21,9 @@ interface StripeEvent {
     currency?: string | null;
     status?: string | null;
     failure_reason?: string | null;
+    amount?: number | null;
+    reason?: string | null;
+    evidence_details?: { due_by?: number | null };
     payment_intent?: string | { id?: string } | null;
   } };
 }
@@ -37,6 +42,7 @@ export class PaymentWebhooksService {
     private readonly paypalGateway: PaypalGatewayService,
     private readonly attempts: PaymentAttemptsService,
     private readonly refunds: RefundSettlementService,
+    private readonly emailService: EmailService,
   ) {}
 
   private verifyStripeSignature(rawBody: Buffer, header: string, secret: string): boolean {
@@ -117,6 +123,11 @@ export class PaymentWebhooksService {
     const providerObjectId = object?.id;
     if (!object || !providerObjectId) return;
 
+    if (event.type === 'charge.dispute.created') {
+      await this.recordStripeDispute(object);
+      return;
+    }
+
     // Refund confirmations: the only way a "pending" refund becomes successful (or failed).
     if (event.type === 'refund.updated' || event.type === 'charge.refund.updated' || event.type === 'refund.failed') {
       const outcome = event.type === 'refund.failed' ? 'FAILED' : refundOutcome(object.status);
@@ -140,6 +151,41 @@ export class PaymentWebhooksService {
       if (typeof object.currency === 'string') outcome.paidCurrency = object.currency.toUpperCase();
     }
     await this.attempts.finalizeCapture(attempt.id, outcome);
+  }
+
+  private async recordStripeDispute(object: NonNullable<StripeEvent['data']>['object']): Promise<void> {
+    if (!object?.id || typeof object.payment_intent !== 'string') return;
+    const transaction = await this.prisma.paymentTransaction.findFirst({
+      where: { provider: 'STRIPE', providerTransactionId: object.payment_intent },
+      select: { id: true, orderId: true, currency: true },
+    });
+    if (!transaction) return;
+    const existing = await this.prisma.paymentDispute.findUnique({ where: { providerDisputeId: object.id }, select: { id: true } });
+    const respondBy = object.evidence_details?.due_by ? new Date(object.evidence_details.due_by * 1000) : null;
+    const amount = Number(((object.amount ?? 0) / 100).toFixed(2));
+    const dispute = await this.prisma.paymentDispute.upsert({
+      where: { providerDisputeId: object.id },
+      create: {
+        transactionId: transaction.id,
+        orderId: transaction.orderId,
+        providerDisputeId: object.id,
+        amount,
+        status: 'NEEDS_RESPONSE',
+        reasonCode: object.reason ?? null,
+        respondBy,
+        rawPayload: object as unknown as Prisma.InputJsonValue,
+      },
+      update: {},
+      select: { id: true },
+    });
+    if (!existing && process.env.OPERATIONS_EMAIL) {
+      const order = await this.prisma.order.findUnique({ where: { id: transaction.orderId }, select: { orderNumber: true } });
+      const alert = operationsAlertEmail({
+        title: `Stripe dispute opened${order ? ` for ${order.orderNumber}` : ''}`,
+        message: `Dispute: ${object.id}\nAmount: ${amount.toFixed(2)} ${transaction.currency}\nReason: ${object.reason ?? 'Not provided'}${respondBy ? `\nRespond by: ${respondBy.toISOString()}` : ''}\nDispute record: ${dispute.id}`,
+      });
+      void this.emailService.send(process.env.OPERATIONS_EMAIL, alert.subject, alert.html);
+    }
   }
 
   // PayPal signs webhooks with a per-request certificate + transmission

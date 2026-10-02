@@ -1,6 +1,6 @@
 import { IsEmail, IsIn, IsUUID } from 'class-validator';
 
-export const paymentProviders = ['STRIPE', 'PAYPAL', 'TWOCHECKOUT'] as const;
+export const paymentProviders = ['STRIPE', 'PAYPAL'] as const;
 export type PaymentProvider = typeof paymentProviders[number];
 
 export class CreatePaymentAttemptDto {
