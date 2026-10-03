@@ -400,6 +400,35 @@ export function newsletterCampaignEmail(params: { subject: string; message: stri
   return { subject: params.subject, html: shell(params.subject, params.subject, body, 'marketing', unsubscribeUrl) };
 }
 
+export function wishlistRestockEmail(params: { productTitle: string; variantTitle: string; productUrl: string; unsubscribeToken: string }) {
+  let body = contentOpen();
+  body += badge('Back in stock', C.greenSoft, C.green);
+  body += h1(esc(params.productTitle));
+  body += p(`${esc(params.variantTitle)} is available again.`);
+  body += button('View product', params.productUrl);
+  body += contentClose();
+  const unsubscribeUrl = `${STOREFRONT_URL}/newsletter/unsubscribe?token=${encodeURIComponent(params.unsubscribeToken)}`;
+  return { subject: `Back in stock: ${params.productTitle}`, html: shell('Back in stock', params.productTitle, body, 'marketing', unsubscribeUrl) };
+}
+
+export function wishlistPriceDropEmail(params: { productTitle: string; variantTitle: string; price: number; productUrl: string; unsubscribeToken: string }) {
+  let body = contentOpen();
+  body += badge('Price drop', C.blueSoft, C.blueDark);
+  body += h1(esc(params.productTitle));
+  body += p(`${esc(params.variantTitle)} is now ${money(params.price)}.`);
+  body += button('View product', params.productUrl);
+  body += contentClose();
+  const unsubscribeUrl = `${STOREFRONT_URL}/newsletter/unsubscribe?token=${encodeURIComponent(params.unsubscribeToken)}`;
+  return { subject: `Price drop: ${params.productTitle}`, html: shell('Price drop', params.productTitle, body, 'marketing', unsubscribeUrl) };
+}
+
+export function lowStockAlertEmail(params: { productTitle: string; variantTitle: string; stockQty: number; threshold: number }) {
+  return operationsAlertEmail({
+    title: `Low stock: ${params.productTitle}`,
+    message: `${params.variantTitle}\nRemaining: ${params.stockQty}\nAlert threshold: ${params.threshold}`,
+  });
+}
+
 export function notificationEmail(params: { title: string; message: string }) {
   let body = contentOpen();
   body += h1(esc(params.title));

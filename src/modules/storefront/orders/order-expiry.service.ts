@@ -3,6 +3,8 @@ import { withLease } from '../../../common/lease';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RevalidationService } from '../../revalidation/revalidation.service';
 import { productTarget } from '../../revalidation/targets';
+import { ProductVariant } from '@prisma/client';
+import { CatalogAlertsService } from '../../email/catalog-alerts.service';
 
 const SWEEP_MS = 5 * 60 * 1000;
 const holdMinutes = () => Number(process.env.UNPAID_ORDER_HOLD_MINUTES ?? 60);
@@ -14,7 +16,11 @@ export class OrderExpiryService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(OrderExpiryService.name);
   private timer?: NodeJS.Timeout;
 
-  constructor(private readonly prisma: PrismaService, private readonly revalidation: RevalidationService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly revalidation: RevalidationService,
+    private readonly catalogAlerts: CatalogAlertsService,
+  ) {}
 
   onModuleInit() {
     if (process.env.NODE_ENV === 'test') return;
@@ -38,18 +44,22 @@ export class OrderExpiryService implements OnModuleInit, OnModuleDestroy {
     });
     let expired = 0;
     for (const order of stale) {
-      const released = await this.prisma.$transaction(async (tx) => {
+      const changes = await this.prisma.$transaction(async (tx) => {
         // guard on status so a payment landing mid-sweep (or another instance) wins
         const { count } = await tx.order.updateMany({ where: { id: order.id, status: 'AWAITING_PAYMENT', paymentStatus: 'PENDING' }, data: { status: 'CANCELLED' } });
-        if (!count) return false;
+        if (!count) return null;
         await tx.orderStatusHistory.create({ data: { orderId: order.id, fromStatus: 'AWAITING_PAYMENT', toStatus: 'CANCELLED', note: 'Payment not received in time - stock released' } });
+        const changes: Array<{ before: ProductVariant; after: ProductVariant }> = [];
         for (const item of order.items) {
-          await tx.productVariant.update({ where: { id: item.productVariantId }, data: { stockQty: { increment: item.quantity } } });
+          const before = await tx.productVariant.findUniqueOrThrow({ where: { id: item.productVariantId } });
+          const after = await tx.productVariant.update({ where: { id: item.productVariantId }, data: { stockQty: { increment: item.quantity } } });
+          changes.push({ before, after });
         }
-        return true;
+        return changes;
       });
-      if (released) {
+      if (changes) {
         expired += 1;
+        for (const { before, after } of changes) void this.catalogAlerts.variantChanged(before, after);
         void productTarget(this.prisma, order.items.map((item) => item.productId))
           .then((target) => this.revalidation.revalidate(target, `OrderExpiryService.expire order=${order.id}`))
           .catch((error) => this.logger.warn(`Stock cache invalidation failed for expired order ${order.id}: ${(error as Error).message}`));

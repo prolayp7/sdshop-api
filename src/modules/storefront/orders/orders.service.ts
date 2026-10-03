@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, Logger, NotFoundExc
 import { promises as fs } from 'fs';
 import { relative, resolve, sep } from 'path';
 import { randomBytes } from 'crypto';
-import { Prisma } from '@prisma/client';
+import { Prisma, ProductVariant } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { buildPaginationMeta, paginationSkipTake } from '../../../common/pagination';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
@@ -13,6 +13,7 @@ import { CheckoutDto } from './dto/checkout.dto';
 import { mediaBuckets, mediaUploadDirectory } from '../../../bootstrap';
 import { buildInvoicePdf } from './invoice-pdf';
 import { EmailService } from '../../email/email.service';
+import { CatalogAlertsService } from '../../email/catalog-alerts.service';
 import { orderConfirmationEmail, orderCancelledEmail, paymentFailedEmail, operationsAlertEmail } from '../../email/email-templates';
 import { RevalidationService } from '../../revalidation/revalidation.service';
 import { productTarget } from '../../revalidation/targets';
@@ -44,6 +45,7 @@ export class OrdersService {
     private readonly couponsService: StorefrontCouponsService,
     private readonly emailService: EmailService,
     private readonly revalidation: RevalidationService,
+    private readonly catalogAlerts: CatalogAlertsService,
   ) {}
 
   private revalidateStock(productIds: number[], context: string) {
@@ -234,6 +236,7 @@ export class OrdersService {
     });
     if (!created) return this.findByUuid((await this.prisma.order.findUniqueOrThrow({ where: { checkoutKey: idempotencyKey } })).uuid);
 
+    for (const item of activeItems) void this.catalogAlerts.checkLowStock(item.productVariantId);
     this.revalidateStock(lines.map((line) => line.productId), 'OrdersService.checkout');
     return this.findByUuid(created.uuid);
   }
@@ -384,17 +387,21 @@ export class OrdersService {
     if (!CANCELLABLE_STATUSES.includes(order.status)) {
       throw new BadRequestException(`Order cannot be cancelled once it is ${order.status.toLowerCase().replace(/_/g, ' ')}`);
     }
-    const updated = await this.prisma.$transaction(async (tx) => {
+    const { updated, changes } = await this.prisma.$transaction(async (tx) => {
+      const changes: Array<{ before: ProductVariant; after: ProductVariant }> = [];
       await tx.order.update({ where: { id: order.id }, data: { status: 'CANCELLED' } });
       await tx.orderStatusHistory.create({
         data: { orderId: order.id, fromStatus: order.status, toStatus: 'CANCELLED', note: reason },
       });
       for (const item of order.items) {
-        await tx.productVariant.update({ where: { id: item.productVariantId }, data: { stockQty: { increment: item.quantity } } });
+        const before = await tx.productVariant.findUniqueOrThrow({ where: { id: item.productVariantId } });
+        const after = await tx.productVariant.update({ where: { id: item.productVariantId }, data: { stockQty: { increment: item.quantity } } });
+        changes.push({ before, after });
       }
-      return tx.order.findUniqueOrThrow({ where: { id: order.id }, include: orderDetailInclude });
+      return { updated: await tx.order.findUniqueOrThrow({ where: { id: order.id }, include: orderDetailInclude }), changes };
     });
 
+    for (const { before, after } of changes) void this.catalogAlerts.variantChanged(before, after);
     const email = orderCancelledEmail({ orderNumber: updated.orderNumber });
     void this.emailService.send(updated.email, email.subject, email.html);
     this.revalidateStock(order.items.map((item) => item.productId), 'OrdersService.cancel');

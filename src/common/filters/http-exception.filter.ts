@@ -44,6 +44,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       response.status(status).json({ error: { code, message, details } });
     } else {
+      console.error(
+        '[HttpExceptionFilter] Unhandled exception:',
+        exception instanceof Error ? exception.stack ?? exception.message : exception,
+      );
       response.status(500).json({
         error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
       });

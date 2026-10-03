@@ -553,6 +553,7 @@ model ProductVariant {
   salePrice         Decimal?      @map("sale_price") @db.Decimal(10, 2)
   stockQty          Int           @default(0) @map("stock_qty")
   lowStockThreshold Int           @default(5) @map("low_stock_threshold")
+  lowStockAlertSentAt DateTime?   @map("low_stock_alert_sent_at")
   weightKg          Decimal?      @map("weight_kg") @db.Decimal(6, 3)
   lengthCm          Decimal?      @map("length_cm") @db.Decimal(6, 2)
   widthCm           Decimal?      @map("width_cm") @db.Decimal(6, 2)
