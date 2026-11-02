@@ -2,7 +2,7 @@
 // no templating engine, matching this module's original convention (see
 // git history), just outgrown to real per-email layouts as the template
 // count grew past "a handful of one-liners". Brand assets/palette match
-// the design system built in ukshop-store/public/emails.
+// the active Bytevex storefront design system.
 
 import { formatMoney } from '../../common/currency';
 
@@ -15,11 +15,11 @@ const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial
 export const LOGO_SRC_PLACEHOLDER = '{{EMAIL_LOGO_SRC}}';
 
 const C = {
-  black: '#000000', ink: '#101827', body: '#4b5565', faint: '#8a94a3', line: '#e2e6ec', bg: '#f4f6f9', card: '#ffffff',
-  red: '#e0201f', blueSoft: '#e8f1fd', blueDark: '#0950ad',
+  navy: '#05080d', footerNavy: '#0a111b', ink: '#101827', body: '#4b5565', faint: '#8a94a3', line: '#e2e6ec', bg: '#f4f6f9', card: '#ffffff',
+  blue: '#087ff5', cyan: '#39c7ff', blueSoft: '#e8f1fd', blueDark: '#005bb3',
   amberSoft: '#fff3e6', amberDark: '#8a4600',
   greenSoft: '#e6f7f0', green: '#00875a',
-  footInk: '#c7cedb', footFaint: '#7c8aa0',
+  footInk: '#c5d3e2', footFaint: '#93a4bb',
 };
 
 function money(n: number): string {
@@ -53,7 +53,7 @@ function shell(title: string, preheader: string, bodyRows: string, footerVariant
   img{-ms-interpolation-mode:bicubic;border:0;height:auto;line-height:100%;outline:none;text-decoration:none;}
   table{border-collapse:collapse !important;}
   body{margin:0;padding:0;width:100% !important;background:${C.bg};}
-  a{color:${C.red};}
+  a{color:${C.blue};}
   @media screen and (max-width:600px){
     .container{width:100% !important;}
     .px{padding-left:24px !important;padding-right:24px !important;}
@@ -67,19 +67,19 @@ function shell(title: string, preheader: string, bodyRows: string, footerVariant
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};">
 <tr><td align="center" style="padding:40px 16px;">
 <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;border:1px solid ${C.line};border-radius:12px;overflow:hidden;">
-  <tr><td style="background:${C.black};padding:26px 40px;" align="center">
-    <img src="${LOGO_SRC_PLACEHOLDER}" width="120" alt="RigForge" style="display:block;border-radius:6px;">
+  <tr><td style="background:${C.navy};padding:26px 40px;" align="center">
+    <img src="${LOGO_SRC_PLACEHOLDER}" width="120" alt="SD Shop" style="display:block;border-radius:6px;">
   </td></tr>
 ${bodyRows}
-  <tr><td style="background:${C.black};padding:28px 40px;" class="px" align="center">
+  <tr><td style="background:${C.footerNavy};padding:28px 40px;" class="px" align="center">
     <p style="margin:0 0 10px;font:13px/1.6 ${FONT};color:${C.footInk};">
-      UK Shop Ltd &middot; 14 Foundry Row, Manchester, M1 4AN, United Kingdom
+      SD Shop Ltd &middot; 14 Foundry Row, Manchester, M1 4AN, United Kingdom
     </p>
     <p style="margin:0;font:12px/1.8 ${FONT};color:${C.footFaint};">
       ${unsub} &nbsp;&middot;&nbsp;
-      <a href="${STOREFRONT_URL}/pages/about-us" style="color:${C.footInk};text-decoration:underline;">Contact support</a>
+      <a href="${STOREFRONT_URL}/pages/about-us" style="color:${C.cyan};text-decoration:underline;">Contact support</a>
     </p>
-    <p style="margin:14px 0 0;font:11px/1.6 ${FONT};color:#4c5a70;">&copy; ${new Date().getFullYear()} UK Shop Ltd. All rights reserved.</p>
+    <p style="margin:14px 0 0;font:11px/1.6 ${FONT};color:${C.footFaint};">&copy; ${new Date().getFullYear()} SD Shop Ltd. All rights reserved.</p>
   </td></tr>
 </table>
 </td></tr>
@@ -113,7 +113,7 @@ function p(html: string, opts: { color?: string; size?: number; margin?: string 
 }
 function button(text: string, href: string, opts: { bg?: string; fg?: string; margin?: string } = {}): string {
   return `    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:${opts.margin ?? '26px 0 6px'};"><tr>
-      <td style="background:${opts.bg ?? C.red};border-radius:10px;">
+      <td style="background:${opts.bg ?? C.blue};border-radius:10px;">
         <a href="${href}" style="display:inline-block;padding:14px 30px;font:700 14px/1 ${FONT};color:${opts.fg ?? '#ffffff'};text-decoration:none;border-radius:10px;">${esc(text)}</a>
       </td>
     </tr></table>\n`;
@@ -237,7 +237,7 @@ export function orderDeliveredEmail(params: { orderNumber: string; orderUuid: st
   body += h1('Your order has arrived');
   body += p(`Order <b>${esc(params.orderNumber)}</b> was delivered. We hope you love it &mdash; let us know what you think.`);
   body += button('Leave a review', `${STOREFRONT_URL}/account/orders/${params.orderUuid}`);
-  body += button('View order details', `${STOREFRONT_URL}/account/orders/${params.orderUuid}`, { bg: '#ffffff', fg: C.red, margin: '0' });
+  body += button('View order details', `${STOREFRONT_URL}/account/orders/${params.orderUuid}`, { bg: '#ffffff', fg: C.blue, margin: '0' });
   body += contentClose();
   return { subject: `Order delivered - ${params.orderNumber}`, html: shell(`Order delivered - ${params.orderNumber}`, `Order ${params.orderNumber} has been delivered.`, body) };
 }
@@ -320,7 +320,7 @@ export function orderRefundedEmail(params: { orderNumber: string; refundAmount: 
 
 export function welcomeEmail(params: { firstName: string; code?: string }) {
   let body = contentOpen();
-  body += h1(`Welcome to UK Shop, ${esc(params.firstName)}`);
+  body += h1(`Welcome to SD Shop, ${esc(params.firstName)}`);
   body += p('Your account is ready. Here&rsquo;s what you get every time you shop with us.');
   if (params.code) {
     body += p('<b>Confirm your email address</b> &mdash; enter this code to verify your email and finish setting up your account.', { size: 14, margin: '0 0 12px' });
@@ -332,7 +332,7 @@ export function welcomeEmail(params: { firstName: string; code?: string }) {
   body += p('<b>Easy returns</b> &mdash; 30-day returns on almost everything, no fuss.', { size: 14, margin: '0 0 10px' });
   body += button('Start shopping', STOREFRONT_URL);
   body += contentClose();
-  return { subject: 'Welcome to UK Shop', html: shell('Welcome to UK Shop', "Your account is ready — here's what you get.", body) };
+  return { subject: 'Welcome to SD Shop', html: shell('Welcome to SD Shop', "Your account is ready — here's what you get.", body) };
 }
 
 export function accountDeletionRequestReceivedEmail(params: { firstName: string }) {
@@ -360,7 +360,7 @@ export function emailVerificationEmail(params: { code: string }) {
   body += otpBlock(params.code);
   body += p('This code expires in 10 minutes.', { size: 13, color: C.faint, margin: '0 0 24px' });
   body += divider();
-  body += p('Didn&rsquo;t sign up for UK Shop? You can ignore this email.', { size: 13, color: C.faint, margin: '0' });
+  body += p('Didn&rsquo;t sign up for SD Shop? You can ignore this email.', { size: 13, color: C.faint, margin: '0' });
   body += contentClose();
   return { subject: 'Confirm your email address', html: shell('Confirm your email address', 'Use this code to verify your email address.', body) };
 }
@@ -374,7 +374,7 @@ export function passwordResetEmail(params: { code: string }) {
   body += divider();
   body += p('If you didn&rsquo;t request this, you can safely ignore this email &mdash; your password won&rsquo;t be changed.', { size: 13, color: C.faint, margin: '0' });
   body += contentClose();
-  return { subject: 'Reset your password', html: shell('Reset your password', 'Use this code to reset your UK Shop password.', body) };
+  return { subject: 'Reset your password', html: shell('Reset your password', 'Use this code to reset your SD Shop password.', body) };
 }
 
 /* ------------------------------------------------------------------------ */
